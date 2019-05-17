@@ -8,6 +8,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import extras.Error;
+
 public class Schulklasse {
 	
 	private List<Schueler> schulklasse = new ArrayList<Schueler>();

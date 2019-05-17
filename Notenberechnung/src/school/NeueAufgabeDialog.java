@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import gui.Notenberechnung_GUI;
+
 public class NeueAufgabeDialog extends Dialog {
 
 	private double errorId = 999999;
