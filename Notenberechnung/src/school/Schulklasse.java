@@ -70,7 +70,7 @@ public class Schulklasse {
 			}
 			sc.close();
 			err.setErrorId(0);
-			err.setErrorMsg("Klassenliste mit " + this.schulklasse.size() + " Schülern erfolgreich eingelesen");
+			err.setErrorMsg("Klassenliste mit " + this.schulklasse.size() + " Schülernnamen erfolgreich eingelesen");
 			return err;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

@@ -6,6 +6,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,13 +19,21 @@ import java.util.regex.Pattern;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Color;
+import org.apache.poi.ss.usermodel.ColorScaleFormatting;
+import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
+import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold.RangeType;
+import org.apache.poi.ss.usermodel.ExtendedColor;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.XSSFColorScaleFormatting;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
@@ -250,7 +260,6 @@ public class Notenberechnung_GUI {
 		    for (int i=0; i<startRow; i++) {
 		    	sheet.createRow(i);
 		    }
-			
 
 			int rowNum = startRow-1;			
 			nextColumn = 1;
@@ -672,6 +681,30 @@ public class Notenberechnung_GUI {
 			rowNum++;
 		}
 		
+		// Bedingte Formattierung		
+		SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();		
+		ConditionalFormattingRule rule1 = sheetCF.createConditionalFormattingColorScaleRule();
+	    ColorScaleFormatting clrFmt = rule1.getColorScaleFormatting();
+	    assertEquals(3, clrFmt.getNumControlPoints());
+	    String[] colors = {"00b034", "ffc000", "ff0000"};
+	    assertEquals(3, clrFmt.getColors().length);
+	    assertEquals(3, clrFmt.getThresholds().length);
+	    
+	    for (int c = 0; c < 3; c++) {
+	    	((ExtendedColor)clrFmt.getColors()[c]).setARGBHex(colors[c]);
+	    }
+
+	    clrFmt.getThresholds()[0].setRangeType(RangeType.NUMBER);
+	    clrFmt.getThresholds()[0].setValue(1d);
+	    clrFmt.getThresholds()[1].setRangeType(RangeType.NUMBER);
+	    clrFmt.getThresholds()[1].setValue(3d);
+	    clrFmt.getThresholds()[2].setRangeType(RangeType.NUMBER);
+	    clrFmt.getThresholds()[2].setValue(6d);
+
+	    CellRangeAddress [] regions = { CellRangeAddress.valueOf(columnNames.get(totalNotenColumnindex) + (startRow+1) + ":" + columnNames.get(totalNotenColumnindex) + (startRow+klasse.getSize())) };
+	    sheetCF.addConditionalFormatting(regions, rule1);
+		
+	    
 		// zaehlen der jeweiligen Noten
 		String formula;
 		for (int i=1; i<=6; i++) {
