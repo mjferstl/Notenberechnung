@@ -1,13 +1,11 @@
 package gui;
 
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.awt.Toolkit;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -122,17 +120,20 @@ public class Notenberechnung_GUI {
 		btnBrowse.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				FileDialog fd = new FileDialog(new Frame());
-				fd.setTitle("Klassenliste auswählen...");
-				fd.setVisible(true);
-				if (fd.getFile() == null) {
+				FileDialog fd = new FileDialog(shell, SWT.OPEN);
+				fd.setText("Klassenliste auswählen...");
+				String[] filterExt = { "*.txt", "*.*" };
+		        fd.setFilterExtensions(filterExt);
+				String selected = fd.open();				
+				
+				if (selected == null) {
 					updateLogwindow("Keine Datei ausgwählt","red");
 					lblKlasseDatei.setText("Keine Datei ausgwählt");
 					lblKlasseDatei.requestLayout();
 				} else {
-					System.out.println("Datei ausgwählt: " + fd.getFile().toString());
-					String file_name = fd.getFile().toString();
-					String file_path = fd.getDirectory().toString();
+					System.out.println("Datei ausgwählt: " + fd.getFileName().toString());
+					String file_name = fd.getFileName().toString();
+					String file_path = fd.getFilterPath().toString();
 					
 					lblKlasseDatei.setText(file_name);
 					lblKlasseDatei.requestLayout();
@@ -140,7 +141,7 @@ public class Notenberechnung_GUI {
 					updateLogwindow("Klassenliste ausgewählt","blue");
 					
 					klasse = new Schulklasse();
-					String path_to_file = file_path + file_name;
+					String path_to_file = file_path + "\\" + file_name;
 					Error error = new Error();
 					error = klasse.readKlassenliste(path_to_file);
 					
@@ -347,7 +348,7 @@ public class Notenberechnung_GUI {
 			// Uebersicht ueber alle Noten
 			addNotenuebersicht(sheet);
 			
-			// berechnung der GesamtNoten
+			// Berechnung der GesamtNoten
 			addNotenberechnung(sheet);
 			
 			// Resize all columns to fit the content size
@@ -356,18 +357,30 @@ public class Notenberechnung_GUI {
 		    }
 			
 			// Write the output to a file
-		    FileOutputStream fileOut;
-			try {
-				fileOut = new FileOutputStream("Klasse.xlsx");
-				workbook.write(fileOut);
-				workbook.close();
-			    fileOut.close();
-			    updateLogwindow("Excel-Datei erfolgreich erstellt","green");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				updateLogwindow("Die Datei konnte nicht erstellt werden","red");
-			} catch (IOException e) {
-				e.printStackTrace();
+		    
+		    FileDialog fsd = new FileDialog(shell, SWT.SAVE);
+			fsd.setText("Speichern unter...");
+			String[] filterExt = {"*.xlsx"};
+	        fsd.setFilterExtensions(filterExt);
+	        fsd.setOverwrite(true);
+			String selected = fsd.open();	
+			
+			if (selected == null) {
+				updateLogwindow("Keine Datei ausgewählt. Liste wurde nicht gespeichert.", "red");
+			} else {
+			    FileOutputStream fileOut;
+				try {
+					fileOut = new FileOutputStream(selected);
+					workbook.write(fileOut);
+					workbook.close();
+				    fileOut.close();
+				    updateLogwindow("Excel-Datei erfolgreich erstellt","green");
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					updateLogwindow("Die Datei konnte nicht erstellt werden","red");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	    
