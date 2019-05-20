@@ -60,7 +60,8 @@ public class Notenberechnung_GUI {
 	private int nextColumn;
 	private final int startRow = 4; // funefte Zeile
 	
-	private final String[] columnNames = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","AA","AB","AC"};
+	private final String[] alphabet =   {"","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	private final ArrayList<String> columnNames = new ArrayList<String>();
 	private List<String> resultColumns = new ArrayList<String>();
 	private String totalPointsFormula = "";
 	private int totalPointsColumnIndex, totalNotenColumnindex, notenBereicheEndeColumnIndex;
@@ -186,14 +187,11 @@ public class Notenberechnung_GUI {
 		for (int i = 0; i < titles.length; i++) {
 			table.getColumn(i).pack();
 		}
-//		table.setSize(table.computeSize(SWT.DEFAULT, 200));
 		
 		Button addTask = new Button(shell, SWT.NONE);
 		addTask.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-//				addAufgabe();
-//				addTextproduktion();
 				NeueAufgabeDialog na = new NeueAufgabeDialog(shell);
 				na.open();
 			}
@@ -261,10 +259,11 @@ public class Notenberechnung_GUI {
 				  setCellText(sheet, rowNum, nextColumn+i, schuelerHeader[i]);
 				  sheet.getRow(rowNum).getCell(nextColumn+i).setCellStyle(boldStyle);
 			}
+			setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn+schuelerHeader.length-1), sheet);
 			
 			rowNum++;
 			
-			// borders
+			// borders			
 			setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum+klasse.getSize()-1, nextColumn, nextColumn+schuelerHeader.length-1), sheet);
 			
 			int temp_rowNum = rowNum;
@@ -281,7 +280,7 @@ public class Notenberechnung_GUI {
 			rowNum--;
 			
 			// Noten
-			setCellText(sheet, rowNum, nextColumn, "Noten");
+			setCellText(sheet, rowNum, nextColumn, "  Noten  ");
 			sheet.addMergedRegion(new CellRangeAddress(rowNum,rowNum,nextColumn,nextColumn+2));
 			sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
 			setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn+2), sheet);
@@ -296,7 +295,7 @@ public class Notenberechnung_GUI {
 			nextColumn++;
 			
 			
-			// alle aufgaben hinzufügen
+			// alle Aufgaben hinzufügen
 			Pattern pa = Pattern.compile(Aufgabe.CONFIG_PATTERN);
 			Pattern pt = Pattern.compile(Textproduktion.CONFIG_PATTERN);
 			
@@ -341,7 +340,7 @@ public class Notenberechnung_GUI {
 				}
 			}			
 			
-			// berechnung der Gesamtpunktzahl
+			// Berechnung der Gesamtpunktzahl
 			addTotalPoints(sheet);
 			nextColumn++;		
 			
@@ -356,8 +355,7 @@ public class Notenberechnung_GUI {
 		      sheet.autoSizeColumn(i);
 		    }
 			
-			// Write the output to a file
-		    
+			// Select a filename to save the file	    
 		    FileDialog fsd = new FileDialog(shell, SWT.SAVE);
 			fsd.setText("Speichern unter...");
 			String[] filterExt = {"*.xlsx"};
@@ -368,6 +366,7 @@ public class Notenberechnung_GUI {
 			if (selected == null) {
 				updateLogwindow("Keine Datei ausgewählt. Liste wurde nicht gespeichert.", "red");
 			} else {
+				// Write the output to a file
 			    FileOutputStream fileOut;
 				try {
 					fileOut = new FileOutputStream(selected);
@@ -420,11 +419,11 @@ public class Notenberechnung_GUI {
 		
 		// legend of all columns
 		setCellText(sheet, rowNum, nextColumn, task.getNameBe());
-		setCellText(sheet, rowNum, nextColumn+1, task.getNameGewichtung());
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
+		setCellText(sheet, rowNum, nextColumn+1, task.getNameGewichtung());		
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn+1).setCellStyle(centeredStyle);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
 		
 		sheet.setColumnWidth(nextColumn, 10*256);
 		sheet.setColumnWidth(nextColumn+1, 12*256);
@@ -432,11 +431,11 @@ public class Notenberechnung_GUI {
 		rowNum++;
 		
 		setCellText(sheet, rowNum, nextColumn, task.getBe());
-		setCellText(sheet, rowNum, nextColumn+1, task.getGewichtung());
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
+		setCellText(sheet, rowNum, nextColumn+1, task.getGewichtung());		
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn+1).setCellStyle(centeredStyle);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
 		
 		rowNum++;
 		
@@ -444,14 +443,14 @@ public class Notenberechnung_GUI {
 		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum+klasse.getSize()-1, nextColumn, nextColumn+1), sheet);
 		
 		for (int i = 0; i < klasse.getSize(); i++) {	
-			String formula = columnNames[nextColumn] + (rowNum+1) + "*" + columnNames[nextColumn+1] + startRow;
+			String formula = columnNames.get(nextColumn) + (rowNum+1) + "*" + columnNames.get(nextColumn+1) + startRow;
 			setCellTextAsFormula(sheet, rowNum, nextColumn+1, formula);			
 			rowNum++;
 		}
 		
-		resultColumns.add(columnNames[nextColumn+1]);
+		resultColumns.add(columnNames.get(nextColumn+1));
 		
-		totalPointsFormula = totalPointsFormula + columnNames[nextColumn] + (startRow) + "*" + columnNames[nextColumn+1] + (startRow) + "+";
+		totalPointsFormula = totalPointsFormula + columnNames.get(nextColumn) + (startRow) + "*" + columnNames.get(nextColumn+1) + (startRow) + "+";
 		
 		// increment column 2x
 		nextColumn++;
@@ -473,13 +472,13 @@ public class Notenberechnung_GUI {
 		// legend of all columns
 		setCellText(sheet, rowNum, nextColumn, task.getNameInhalt());
 		setCellText(sheet, rowNum, nextColumn+1, task.getNameSprache());
-		setCellText(sheet, rowNum, nextColumn+2, task.getNameGewichtung());		
+		setCellText(sheet, rowNum, nextColumn+2, task.getNameGewichtung());
+		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
+		sheet.getRow(rowNum).getCell(nextColumn+1).setCellStyle(centeredStyle);
+		sheet.getRow(rowNum).getCell(nextColumn+2).setCellStyle(centeredStyle);		
 		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
 		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
 		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+2, nextColumn+2), sheet);
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn+1).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn+2).setCellStyle(centeredStyle);
 		
 		sheet.setColumnWidth(nextColumn, 10*256);
 		sheet.setColumnWidth(nextColumn+1, 10*256);
@@ -491,12 +490,12 @@ public class Notenberechnung_GUI {
 		setCellText(sheet, rowNum, nextColumn, task.getPunkteInhalt());
 		setCellText(sheet, rowNum, nextColumn+1, task.getPunkteSprache());
 		setCellText(sheet, rowNum, nextColumn+2, task.getGewichtung());
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+2, nextColumn+2), sheet);
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn+1).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn+2).setCellStyle(centeredStyle);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+1, nextColumn+1), sheet);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum, nextColumn+2, nextColumn+2), sheet);
 		
 		rowNum++;
 		
@@ -504,13 +503,13 @@ public class Notenberechnung_GUI {
 		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum+klasse.getSize()-1, nextColumn, nextColumn+2), sheet);
 		
 		for (int i = 0; i < klasse.getSize(); i++) {
-			String formula = "(" + columnNames[nextColumn] + (rowNum+1) + "+" + columnNames[nextColumn+1] + (rowNum+1) + ")*" + columnNames[nextColumn+2] + startRow;
+			String formula = "(" + columnNames.get(nextColumn) + (rowNum+1) + "+" + columnNames.get(nextColumn+1) + (rowNum+1) + ")*" + columnNames.get(nextColumn+2) + startRow;
 			setCellTextAsFormula(sheet, rowNum, nextColumn+2, formula);			
 			rowNum++;
 		}	
 				
-		resultColumns.add(columnNames[nextColumn+2]);
-		totalPointsFormula = totalPointsFormula + "(" + columnNames[nextColumn] + (startRow) + "+" + columnNames[nextColumn+1] + (startRow) + ")*" + columnNames[nextColumn+2] + (startRow) + "+";
+		resultColumns.add(columnNames.get(nextColumn+2));
+		totalPointsFormula = totalPointsFormula + "(" + columnNames.get(nextColumn) + (startRow) + "+" + columnNames.get(nextColumn+1) + (startRow) + ")*" + columnNames.get(nextColumn+2) + (startRow) + "+";
 		
 		// increment column index 3x
 		nextColumn++;
@@ -525,7 +524,6 @@ public class Notenberechnung_GUI {
 		
 		setCellText(sheet, rowNum, nextColumn, "Gesamt");
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum+2, nextColumn, nextColumn), sheet);
 		
 		// increment row index
 		rowNum++;
@@ -534,6 +532,7 @@ public class Notenberechnung_GUI {
 		String formula = totalPointsFormula.substring(0, totalPointsFormula.length()-1);
 		setCellTextAsFormula(sheet, rowNum, nextColumn, formula);
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldStyle);
+		setRegionBorderWithThin(new CellRangeAddress(rowNum-2, rowNum, nextColumn, nextColumn), sheet);
 		
 		rowNum++;
 		
@@ -609,18 +608,16 @@ public class Notenberechnung_GUI {
 		
 		double[] prozentbereiche = {87.5,75,62.5,50,30,0};
 		String form;
-		String cellTotalPoints = columnNames[totalPointsColumnIndex] + startRow;
+		String cellTotalPoints = columnNames.get(totalPointsColumnIndex) + startRow;		
 		
-		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum+5, nextColumn, nextColumn+5), sheet);
-		
-		// noten
+		// Noten
 		for (int i=1; i<=6; i++) {
 			setCellText(sheet, rowNum+i-1, nextColumn, i);
 			setCellText(sheet, rowNum+i-1, nextColumn+1, prozentbereiche[i-1]);
 			if (i==1) {
 				form = cellTotalPoints;
 			} else {
-				form = "ROUNDDOWN(" + columnNames[nextColumn+1] + (rowNum+i-1) + "*" + cellTotalPoints + "/100*2,0)/2-0.5";
+				form = "ROUNDDOWN(" + columnNames.get(nextColumn+1) + (rowNum+i-1) + "*" + cellTotalPoints + "/100*2,0)/2-0.5";
 			}
 			setCellTextAsFormula(sheet, rowNum+i-1, nextColumn+2, form);
 			sheet.getRow(rowNum+i-1).getCell(nextColumn+2).setCellStyle(rightStyle);
@@ -628,10 +625,13 @@ public class Notenberechnung_GUI {
 			setCellText(sheet, rowNum+i-1, nextColumn+3,"-");
 			sheet.getRow(rowNum+i-1).getCell(nextColumn+3).setCellStyle(centeredStyle);
 			
-			form = "ROUNDDOWN(" + columnNames[nextColumn+1] + (rowNum+i) + "*" + cellTotalPoints + "/100*2,0)/2";
+			form = "ROUNDDOWN(" + columnNames.get(nextColumn+1) + (rowNum+i) + "*" + cellTotalPoints + "/100*2,0)/2";
 			setCellTextAsFormula(sheet, rowNum+i-1, nextColumn+4, form);
 			sheet.getRow(rowNum+i-1).getCell(nextColumn+4).setCellStyle(leftStyle);
 		}
+		
+		// borders
+		setRegionBorderWithThin(new CellRangeAddress(rowNum, rowNum+5, nextColumn, nextColumn+5), sheet);
 		
 	}
 	
@@ -649,7 +649,7 @@ public class Notenberechnung_GUI {
 		
 		for (int i=0; i<klasse.getSize(); i++) {
 			
-			aktCell = columnNames[totalPointsColumnIndex] + rowNum; 
+			aktCell = columnNames.get(totalPointsColumnIndex) + rowNum; 
 			
 			formulaNote = "IF(NOT(ISNUMBER(" + aktCell + ")),\"\",";
 			// Ausgangsbasis fuer die + und - Berechnung
@@ -657,9 +657,9 @@ public class Notenberechnung_GUI {
 			formulaMinus = formulaNote + "IF(OR(";
 			
 			for (int j=1; j<=6; j++) {
-				formulaNote = formulaNote + "IF(" + aktCell + ">=$" + columnNames[notenBereicheEndeColumnIndex] + "$" + (startRow+j) + "," + j + ",";
-				formulaPlus = formulaPlus + aktCell + "=$" + columnNames[notenBereicheEndeColumnIndex-2] + "$" + (startRow+j) + ",";
-				formulaMinus = formulaMinus + aktCell + "=$" + columnNames[notenBereicheEndeColumnIndex] + "$" + (startRow+j) + ",";
+				formulaNote = formulaNote + "IF(" + aktCell + ">=$" + columnNames.get(notenBereicheEndeColumnIndex) + "$" + (startRow+j) + "," + j + ",";
+				formulaPlus = formulaPlus + aktCell + "=$" + columnNames.get(notenBereicheEndeColumnIndex-2) + "$" + (startRow+j) + ",";
+				formulaMinus = formulaMinus + aktCell + "=$" + columnNames.get(notenBereicheEndeColumnIndex) + "$" + (startRow+j) + ",";
 			}
 			formulaNote = formulaNote + "\"\")))))))";
 			formulaPlus = formulaPlus.substring(0, formulaPlus.length()-1) + "),\"+\",\"\"))";
@@ -675,7 +675,7 @@ public class Notenberechnung_GUI {
 		// zaehlen der jeweiligen Noten
 		String formula;
 		for (int i=1; i<=6; i++) {
-			formula = "COUNTIF(" + columnNames[totalNotenColumnindex] + (startRow+1) + ":" + columnNames[totalNotenColumnindex] + (startRow+klasse.getSize()) + "," + columnNames[notenBereicheEndeColumnIndex-4] + (startRow+i) + ")";
+			formula = "COUNTIF(" + columnNames.get(totalNotenColumnindex) + (startRow+1) + ":" + columnNames.get(totalNotenColumnindex) + (startRow+klasse.getSize()) + "," + columnNames.get(notenBereicheEndeColumnIndex-4) + (startRow+i) + ")";
 			setCellTextAsFormula(sheet, startRow+i-1, notenBereicheEndeColumnIndex+1, formula);
 		}		
 	}
@@ -700,6 +700,18 @@ public class Notenberechnung_GUI {
 	    
 	    rightStyle = sheet.getWorkbook().createCellStyle();
 	    rightStyle.setAlignment(HorizontalAlignment.RIGHT);
+	    
+	    // Bezeichnungen der Spalten in MS-Excel
+	    if (columnNames.size() == 0) {
+		    for (int i=0; i<alphabet.length; i++) {
+		    	for (int j=1; j<alphabet.length; j++) {
+		    		if (i==0) {
+		    			columnNames.add(alphabet[j] + alphabet[i]);
+		    		} else {
+		    			columnNames.add(alphabet[i] + alphabet[j]);
+		    		}
+		    	}
+		    }
+		}
 	}
-
 }
