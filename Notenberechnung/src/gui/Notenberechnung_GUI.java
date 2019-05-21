@@ -43,6 +43,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import extras.Chart;
 import extras.Error;
 import school.Aufgabe;
 import school.NeueAufgabeDialog;
@@ -60,7 +61,7 @@ public class Notenberechnung_GUI {
 	protected Shell shell;
 	private Text editBezeichnung;
 	
-	private Label logwindow;
+	private static Label logwindow;
 	private Label lblKlasseDatei;
 	private Schulklasse klasse;
 	
@@ -227,7 +228,7 @@ public class Notenberechnung_GUI {
 
 	}
 	
-	private void updateLogwindow(String text, String color) {		
+	public static void updateLogwindow(String text, String color) {		
 		logwindow.setText(text);
 		switch (color) {
 			case "blue":
@@ -303,51 +304,8 @@ public class Notenberechnung_GUI {
 			nextColumn++;
 			nextColumn++;
 			
-			
-			// alle Aufgaben hinzufügen
-			Pattern pa = Pattern.compile(Aufgabe.CONFIG_PATTERN);
-			Pattern pt = Pattern.compile(Textproduktion.CONFIG_PATTERN);
-			
-			Matcher m;
-			
-			for (int i=0; i<table.getItemCount(); i++) {
-				TableItem ti = table.getItem(i);
-				switch (ti.getText(0)) {
-					case "Aufgabe":
-						m = pa.matcher(ti.getText(1));
-						if (m.matches()) {
-							if (m.groupCount() == 2) {
-								try {
-									double be = Double.parseDouble(m.group(1));
-									double gewichtung = Double.parseDouble(m.group(2));
-									aufgabeToXlsx(sheet, new Aufgabe("Aufgabe", be, gewichtung));
-								} catch (NumberFormatException e) {
-									updateLogwindow("Bitte nur Zahlen eingeben","red");
-								}								
-							} else {
-								updateLogwindow("Fehler beim Erstellen der Aufagben im *.xlsx", "red");
-							}							
-						}
-						break;
-					case "Textproduktion":
-						m = pt.matcher(ti.getText(1));
-						if (m.matches()) {
-							if (m.groupCount() == 3) {
-								try {
-									double inhalt = Double.parseDouble(m.group(1));
-									double sprache = Double.parseDouble(m.group(2));
-									double gewichtung = Double.parseDouble(m.group(2));
-									TextproduktionToXlsx(sheet, new Textproduktion("Textproduktion", inhalt, sprache, gewichtung));
-								} catch (NumberFormatException e) {
-									updateLogwindow("Bitte nur Zahlen eingeben","red");
-								}
-							} else {
-								updateLogwindow("Fehler beim Erstellen der Textproduktion im *.xlsx", "red");
-							}							
-						}
-						break;
-				}
-			}			
+			// Alle angelegten Aufgaben einfuegen
+			addAufgaben(sheet);
 			
 			// Berechnung der Gesamtpunktzahl
 			addTotalPoints(sheet);
@@ -358,6 +316,9 @@ public class Notenberechnung_GUI {
 			
 			// Berechnung der GesamtNoten
 			addNotenberechnung(sheet);
+			
+			// Diagramm hizufuegen
+			addNotenverteilungChart(sheet);
 			
 			// Resize all columns to fit the content size
 		    for (int i = 0; i < 6; i++) {
@@ -394,6 +355,42 @@ public class Notenberechnung_GUI {
 	    
 	}
 	
+	private void addAufgaben(Sheet sheet) {
+		// alle Aufgaben hinzufügen			
+		String text;
+		for (int i=0; i<table.getItemCount(); i++) {
+			TableItem ti = table.getItem(i);
+			text = ti.getText(1);
+			switch (ti.getText(0)) {
+			case "Aufgabe":	
+				Aufgabe a = Aufgabe.parseTextToAufgabe(text);
+				if (a != null) {
+					aufgabeToXlsx(sheet, a);
+				}
+				break;
+			case "Textproduktion":
+				Textproduktion tp = Textproduktion.parseTextToTextproduktion(text);
+				if (tp != null) {
+					TextproduktionToXlsx(sheet, tp);
+				}
+				break;
+			}
+		}			
+
+	}
+
+	private void addNotenverteilungChart(Sheet sheet) {
+		Chart notenChart = new Chart(sheet);
+		notenChart.setChartTitle("Notenverteilung");
+		notenChart.setxAxisLabel("Noten");
+		notenChart.setyAxisLabel("Anzahl");
+		notenChart.setXData(new CellRangeAddress(startRow, startRow+5, nextColumn, nextColumn));
+		notenChart.setYData(new CellRangeAddress(startRow, startRow+5, nextColumn+5, nextColumn+5));
+		notenChart.setPositionInSheet(startRow+7, startRow+17, nextColumn, nextColumn+6);
+		notenChart.createChart();
+		
+	}
+
 	public static void addAufgabe(Aufgabe task) {
 		TableItem item = new TableItem(table, SWT.NONE);
 		item.setText(0, task.getBezeichnung());
@@ -702,8 +699,7 @@ public class Notenberechnung_GUI {
 	    clrFmt.getThresholds()[2].setValue(6d);
 
 	    CellRangeAddress [] regions = { CellRangeAddress.valueOf(columnNames.get(totalNotenColumnindex) + (startRow+1) + ":" + columnNames.get(totalNotenColumnindex) + (startRow+klasse.getSize())) };
-	    sheetCF.addConditionalFormatting(regions, rule1);
-		
+	    sheetCF.addConditionalFormatting(regions, rule1);		
 	    
 		// zaehlen der jeweiligen Noten
 		String formula;

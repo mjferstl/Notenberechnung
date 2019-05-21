@@ -1,12 +1,18 @@
 package school;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import gui.Notenberechnung_GUI;
+
 public class Aufgabe {
 	
 	private String bezeichnung;
 	private double be, gewichtung;
 	private final String BE = "BE";
 	private final String GEWICHTUNG = "Gewichtung";
-	public final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
+	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
+	private final static Pattern pa = Pattern.compile(CONFIG_PATTERN);
 	
 	public Aufgabe(String Bezeichnung, double BE) {
 		this.bezeichnung = Bezeichnung;
@@ -18,6 +24,34 @@ public class Aufgabe {
 		this.bezeichnung = Bezeichnung;
 		this.be = BE;
 		this.gewichtung = Gewichtung;
+	}
+	
+	public static Aufgabe parseTextToAufgabe(String text) {
+		
+		Matcher m;
+		Aufgabe a = new Aufgabe("Aufgabe", 0);
+		
+		m = pa.matcher(text);
+		
+		if (m.matches()) {
+			if (m.groupCount() == 2) {
+				try {
+					double be = Double.parseDouble(m.group(1));
+					double gewichtung = Double.parseDouble(m.group(2));
+					a.setBe(be);
+					a.setGewichtung(gewichtung);
+					return a;
+				} catch (NumberFormatException e) {
+					Notenberechnung_GUI.updateLogwindow("Bitte nur Zahlen eingeben","red");
+					return null;
+				}								
+			} else {
+				Notenberechnung_GUI.updateLogwindow("Fehler beim Erstellen der Aufagben im *.xlsx", "red");
+				return null;
+			}							
+		} else {
+			return null;
+		}		
 	}
 
 	public String getBezeichnung() {
