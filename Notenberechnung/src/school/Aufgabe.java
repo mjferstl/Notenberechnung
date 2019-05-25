@@ -5,12 +5,12 @@ import java.util.regex.Pattern;
 
 import gui.Notenberechnung_GUI;
 
-public class Aufgabe {
+public class Aufgabe implements Aufgabentyp{
 	
 	private String bezeichnung;
 	private double be, gewichtung;
-	private final String BE = "BE";
-	private final String GEWICHTUNG = "Gewichtung";
+	public final static String BE = "BE";
+	public final static String GEWICHTUNG = "Gewichtung";
 	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern pa = Pattern.compile(CONFIG_PATTERN);
 	
@@ -93,5 +93,4 @@ public class Aufgabe {
 	public String getNameGewichtung() {
 		return GEWICHTUNG;
 	}
-	
 }

@@ -27,15 +27,15 @@ public class Chart {
 	private XSSFSheet xssfsheet;
 	private XDDFDataSource<Double> xAxisData;
 	private XDDFNumericalDataSource<Double> yAxisData;
-	private int r1, r2, c1, c2;
+	private int startRow, endRow, startColumn, endColumn;
 	private String chartTitle, xAxisLabel, yAxisLabel, legend;
 	
 	public Chart(Sheet sheet) {
 		this.xssfsheet = (XSSFSheet) sheet;
-		this.r1 = 0;
-		this.r2 = 10;
-		this.c1 = 0;
-		this.c2 = 10;
+		this.startRow = 0;
+		this.endRow = 10;
+		this.startColumn = 0;
+		this.endColumn = 10;
 		this.chartTitle = "";
 		this.xAxisLabel = "";
 		this.yAxisLabel = "";
@@ -55,16 +55,16 @@ public class Chart {
 		this.legend = legend;
 	}
 	
-	public void setPositionInSheet(int r1, int r2, int c1, int c2) {
-		this.r1 = r1;
-		this.r2 = r2;
-		this.c1 = c1;
-		this.c2 = c2;
+	public void setPositionInSheet(int startRow, int endRow, int startColumn, int endColumn) {
+		this.startRow = startRow;
+		this.endRow = endRow;
+		this.startColumn = startColumn;
+		this.endColumn = endColumn;
 	}
 	
 	public void createChart() {
 		XSSFDrawing drawing = this.xssfsheet.createDrawingPatriarch();
-        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, this.c1, this.r1, this.c2, this.r2);
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, this.startColumn, this.startRow, this.endColumn, this.endRow);
         
 		XSSFChart chart = drawing.createChart(anchor);
         chart.setTitleText(this.chartTitle);
@@ -73,6 +73,8 @@ public class Chart {
         // Use a category axis for the bottom axis.
         XDDFCategoryAxis bottomAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
         bottomAxis.setTitle(this.xAxisLabel); 
+        bottomAxis.setMinimum(0);
+        bottomAxis.setMaximum(7);
         XDDFValueAxis leftAxis = chart.createValueAxis(AxisPosition.LEFT);
         leftAxis.setTitle(this.yAxisLabel);
         leftAxis.setCrosses(AxisCrosses.AUTO_ZERO);

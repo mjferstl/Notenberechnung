@@ -5,13 +5,13 @@ import java.util.regex.Pattern;
 
 import gui.Notenberechnung_GUI;
 
-public class Textproduktion {
+public class Textproduktion implements Aufgabentyp{
 
 	private String Bezeichnung;
 	private double punkteInhalt, punkteSprache, gewichtung;
-	private final String INHALT = "Inhalt";
-	private final String SPRACHE = "Sprache";
-	private final String GEWICHTUNG = "Gewichtung";
+	public final static String INHALT = "Inhalt";
+	public final static String SPRACHE = "Sprache";
+	private final String GEWICHTUNG = Aufgabe.GEWICHTUNG;
 	private final static String CONFIG_PATTERN = "Inhalt: (\\d*.*\\d*), Sprache: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern pt = Pattern.compile(CONFIG_PATTERN);
 
