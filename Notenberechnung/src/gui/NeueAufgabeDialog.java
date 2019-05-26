@@ -90,7 +90,7 @@ public class NeueAufgabeDialog extends Dialog {
 	 */
 	public NeueAufgabeDialog(Shell parent, Aufgabentyp task, int index) {
 		// Pass the default styles here
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		this(parent, SWT.DIALOG_TRIM);
 		setText("Aufgabe editieren");
 
 		//
@@ -280,6 +280,8 @@ public class NeueAufgabeDialog extends Dialog {
 		if (loadTask) {
 			loadImportedTask();
 		}
+		
+		// TODO: better resizing of the shell_1 when loading data of the format \d\.0
 	}
 
 	/**
@@ -288,7 +290,6 @@ public class NeueAufgabeDialog extends Dialog {
 	 */
 	private void loadImportedTask() {
 		if (importedTask.getClass() == Aufgabe.class) {
-			System.out.println("Aufgabe muss geladen werden");
 			lblText1.setText(Aufgabe.BE);
 			lblText2.setText(Aufgabe.GEWICHTUNG);
 			lblText3.setText("");
@@ -296,7 +297,6 @@ public class NeueAufgabeDialog extends Dialog {
 			btnRadioTP.setSelection(false);
 			editText3.setEnabled(false);
 		} else if (importedTask.getClass() == Textproduktion.class) {
-			System.out.println("Textproduktion laden");
 			lblText1.setText(Textproduktion.INHALT);
 			lblText2.setText(Textproduktion.SPRACHE);
 			lblText3.setText(Textproduktion.GEWICHTUNG);
@@ -305,10 +305,9 @@ public class NeueAufgabeDialog extends Dialog {
 		}
 
 		// set entries in the text fields
-		editText1.setText(importedTask.getFirstParam());
-		editText2.setText(importedTask.getSecondParam());
-		editText3.setText(importedTask.getThirdParam());
-		
+		editText1.setText(importedTask.getFirstParam() + "  ");
+		editText2.setText(importedTask.getSecondParam()+ "  ");
+		editText3.setText(importedTask.getThirdParam() + "  ");		
 	}
 
 	/**
