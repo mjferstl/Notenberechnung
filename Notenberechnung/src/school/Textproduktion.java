@@ -11,7 +11,7 @@ public class Textproduktion implements Aufgabentyp{
 	private double punkteInhalt, punkteSprache, gewichtung;
 	public final static String INHALT = "Inhalt";
 	public final static String SPRACHE = "Sprache";
-	private final String GEWICHTUNG = Aufgabe.GEWICHTUNG;
+	public final static String GEWICHTUNG = Aufgabe.GEWICHTUNG;
 	private final static String CONFIG_PATTERN = "Inhalt: (\\d*.*\\d*), Sprache: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern pt = Pattern.compile(CONFIG_PATTERN);
 
@@ -108,6 +108,21 @@ public class Textproduktion implements Aufgabentyp{
 		} else {
 			return null;
 		}	
+	}
+	
+	public String getFirstParam() {
+		String s = String.valueOf(getPunkteInhalt());
+		return s;
+	}
+
+	public String getSecondParam() {
+		String s = String.valueOf(getPunkteSprache());
+		return s;
+	}
+
+	public String getThirdParam() {
+		String s = String.valueOf(getGewichtung());
+		return s;
 	}
 
 

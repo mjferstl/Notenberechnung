@@ -63,7 +63,7 @@ public class Aufgabe implements Aufgabentyp{
 	}
 
 	public double getBe() {
-		return be;
+		return this.be;
 	}
 
 	public void setBe(double be) {
@@ -71,7 +71,7 @@ public class Aufgabe implements Aufgabentyp{
 	}
 
 	public double getGewichtung() {
-		return gewichtung;
+		return this.gewichtung;
 	}
 
 	public void setGewichtung(double gewichtung) {
@@ -92,5 +92,19 @@ public class Aufgabe implements Aufgabentyp{
 	
 	public String getNameGewichtung() {
 		return GEWICHTUNG;
+	}
+
+	public String getFirstParam() {
+		String s = String.valueOf(getBe());
+		return s;
+	}
+
+	public String getSecondParam() {
+		String s = String.valueOf(getGewichtung());
+		return s;
+	}
+
+	public String getThirdParam() {
+		return "";
 	}
 }

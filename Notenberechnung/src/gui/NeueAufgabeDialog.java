@@ -15,29 +15,30 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import school.Aufgabe;
+import school.Aufgabentyp;
 import school.Textproduktion;
 
 public class NeueAufgabeDialog extends Dialog {
 
 	// doubles
 	private double errorId = 999999;
-	
+
 	// labels
 	private Label lblText1, lblText2, lblText3;
 	private Label logwindow;
-	
+
 	// edit text fields
 	private Text editText1, editText2, editText3;
-	
+
 	// shell
 	private Shell shell_1;
-	
+
 	// group
 	private Group grpAufgabentyp;
-	
+
 	// buttons
 	private Button btnRadioAufgabe, btnRadioTP;
-	
+
 	// display
 	private Display display;
 
@@ -48,12 +49,20 @@ public class NeueAufgabeDialog extends Dialog {
 	private final String SPRACHE = Textproduktion.SPRACHE;
 	private final String GEWICHTUNG = Aufgabe.GEWICHTUNG;
 	private final String BE = Aufgabe.BE;
-	
-	
+
+	// boolean
+	private boolean loadTask = false;
+
+	// integers
+	private int tableIndex;
+
+	// objects
+	private Aufgabentyp importedTask;
+
 	/**
 	 * InputDialog constructor
 	 * 
-	 * @param parent the parent
+	 * @param parent: the parent
 	 */
 	public NeueAufgabeDialog(Shell parent) {
 		// Pass the default styles here
@@ -70,42 +79,25 @@ public class NeueAufgabeDialog extends Dialog {
 		// Let users override the default styles
 		super(parent, style);
 		setText("Aufgabe hinzufügen");
+		loadTask = false;
 	}
-
 
 	/**
 	 * InputDialog constructor for selection Textproduktion with values
 	 * 
-	 * @param parent    the parent
-	 * @param style     the style
-	 * @param num1      is the number in the first edit text field at start
-	 * @param num2      is the number in the second edit text field at start
-	 * @param num3      is the number in the third edit text field at start
+	 * @param parent the parent
+	 * @param style  the style
 	 */
-	public NeueAufgabeDialog(Shell parent, double num1, double num2, double num3) {
+	public NeueAufgabeDialog(Shell parent, Aufgabentyp task, int index) {
 		// Pass the default styles here
 		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		setText("Aufgabe editieren");
 
-		setText("Aufgabe hinzufügen");
-
-		// update radio buttons
-		btnRadioTP.setEnabled(true);
-		btnRadioAufgabe.setEnabled(false);
-
-		// update labels
-		lblText1.setText(INHALT);
-		lblText1.requestLayout();
-		lblText2.setText(SPRACHE);
-		lblText2.requestLayout();
-		lblText3.setText(GEWICHTUNG);
-		lblText3.requestLayout();
-
-		// update edit text fields
-		editText1.setText(String.valueOf(num1));
-		editText2.setText(String.valueOf(num2));
-		editText3.setText(String.valueOf(num3));
+		//
+		importedTask = task;
+		loadTask = true;
+		tableIndex = index;
 	}
-	
 
 	/**
 	 * Opens the dialog and returns the input
@@ -115,7 +107,7 @@ public class NeueAufgabeDialog extends Dialog {
 	public void open() {
 		// Create the dialog window
 		shell_1 = new Shell(getParent(), getStyle());
-		shell_1.setSize(173, 359);
+		shell_1.setSize(180, 360);
 		shell_1.setText(getText());
 		createContents(shell_1);
 		shell_1.pack();
@@ -196,23 +188,29 @@ public class NeueAufgabeDialog extends Dialog {
 		// ---------------------------------------------------------------------------------------
 		// Label Text1
 		lblText1 = new Label(shell, SWT.NONE);
+		lblText1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblText1.setText(BE);
 		// Edit Text
 		editText1 = new Text(shell, SWT.BORDER);
+		editText1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
 		// ---------------------------------------------------------------------------------------
 		// Label Text2
 		lblText2 = new Label(shell, SWT.NONE);
+		lblText2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblText2.setText(GEWICHTUNG);
 		// Edit Text
 		editText2 = new Text(shell, SWT.BORDER);
+		editText2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
 		// ---------------------------------------------------------------------------------------
 		// Label Text3
 		lblText3 = new Label(shell, SWT.NONE);
+		lblText3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblText3.setText("");
 		// Edit Text
 		editText3 = new Text(shell, SWT.BORDER);
+		editText3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
 		logwindow = new Label(shell_1, SWT.NONE);
 		logwindow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
@@ -229,24 +227,32 @@ public class NeueAufgabeDialog extends Dialog {
 				if (btnRadioAufgabe.getSelection()) {
 					double be = getDoubleFromInput(editText1.getText());
 					double gewichtung = getDoubleFromInput(editText2.getText());
-					if (gewichtung == 0.0 ) {
+					if (gewichtung == 0.0) {
 						gewichtung = 1.0;
 					}
 					if (be != errorId && gewichtung != errorId) {
 						Aufgabe a = new Aufgabe("Aufgabe", be, gewichtung);
-						Notenberechnung_GUI.addAufgabentyp(a);
+						if (loadTask) {
+							Notenberechnung_GUI.updateTask(a, tableIndex);
+						} else {
+							Notenberechnung_GUI.addTask(a);
+						}
 						shell.close();
 					}
 				} else if (btnRadioTP.getSelection()) {
 					double inhalt = getDoubleFromInput(editText1.getText());
 					double sprache = getDoubleFromInput(editText2.getText());
 					double gewichtung = getDoubleFromInput(editText3.getText());
-					if (gewichtung == 0.0 ) {
+					if (gewichtung == 0.0) {
 						gewichtung = 1.0;
 					}
 					if (inhalt != errorId && sprache != errorId && gewichtung != errorId) {
 						Textproduktion tp = new Textproduktion("Textproduktion", inhalt, sprache, gewichtung);
-						Notenberechnung_GUI.addAufgabentyp(tp);
+						if (loadTask) {
+							Notenberechnung_GUI.updateTask(tp, tableIndex);
+						} else {
+							Notenberechnung_GUI.addTask(tp);
+						}
 						shell.close();
 					}
 				}
@@ -256,7 +262,7 @@ public class NeueAufgabeDialog extends Dialog {
 		// Create the cancel button and add a handler
 		// so that pressing it will set input to null
 		Button cancel = new Button(shell, SWT.PUSH);
-		cancel.setText("Cancel");
+		cancel.setText("Abbrechen");
 		data = new GridData(GridData.FILL_HORIZONTAL);
 		cancel.setLayoutData(data);
 		cancel.addSelectionListener(new SelectionAdapter() {
@@ -269,8 +275,48 @@ public class NeueAufgabeDialog extends Dialog {
 		// user can type input and press Enter
 		// to dismiss
 		shell.setDefaultButton(ok);
+
+		// optional load a specific task
+		if (loadTask) {
+			loadImportedTask();
+		}
 	}
 
+	/**
+	 * load contents of imported task to the gui
+	 * 
+	 */
+	private void loadImportedTask() {
+		if (importedTask.getClass() == Aufgabe.class) {
+			System.out.println("Aufgabe muss geladen werden");
+			lblText1.setText(Aufgabe.BE);
+			lblText2.setText(Aufgabe.GEWICHTUNG);
+			lblText3.setText("");
+			btnRadioAufgabe.setSelection(true);
+			btnRadioTP.setSelection(false);
+			editText3.setEnabled(false);
+		} else if (importedTask.getClass() == Textproduktion.class) {
+			System.out.println("Textproduktion laden");
+			lblText1.setText(Textproduktion.INHALT);
+			lblText2.setText(Textproduktion.SPRACHE);
+			lblText3.setText(Textproduktion.GEWICHTUNG);
+			btnRadioAufgabe.setSelection(false);
+			btnRadioTP.setSelection(true);
+		}
+
+		// set entries in the text fields
+		editText1.setText(importedTask.getFirstParam());
+		editText2.setText(importedTask.getSecondParam());
+		editText3.setText(importedTask.getThirdParam());
+		
+	}
+
+	/**
+	 * get the corresponding double value from an input string
+	 * 
+	 * @param string: input string
+	 * @return
+	 */
 	private double getDoubleFromInput(String string) {
 
 		if (string == "") {
@@ -285,6 +331,12 @@ public class NeueAufgabeDialog extends Dialog {
 		}
 	}
 
+	/**
+	 * update the label at the bottom of the gui
+	 * 
+	 * @param text: text to be shown in the label of the "logwindow"
+	 * @param color: textcolor
+	 */
 	private void updateLogwindow(String text, String color) {
 		logwindow.setText(text);
 		switch (color) {
@@ -301,65 +353,5 @@ public class NeueAufgabeDialog extends Dialog {
 			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		}
 		logwindow.requestLayout();
-	}
-
-//	public synchronized void updateContent(double be, double gewichtung) {
-//		
-//		if (display == null || display.isDisposed()) 
-//            return;
-//		display.asyncExec(new Runnable() {
-//
-//            public void run() {
-//            	// update labels
-//        		lblText1.setText(BE);
-//        		lblText1.requestLayout();
-//        		lblText2.setText(GEWICHTUNG);
-//        		lblText2.requestLayout();
-//        		lblText3.setText("");
-//        		lblText3.requestLayout();
-//        		
-//        		// update edit text fields
-//        		editText1.setText(String.valueOf(be));
-//        		editText2.setText(String.valueOf(gewichtung));
-//        		editText3.setText("");	
-//            }
-//        });
-//		
-//		// update radio buttons
-////		btnRadioTP.setEnabled(false);
-////		btnRadioAufgabe.setEnabled(true);
-//
-//	}
-	
-	public void updateContent(double be, double gewichtung) {
-		
-		Display.getDefault().asyncExec(() -> editText1.setText(String.valueOf(be)));
-		Display.getDefault().asyncExec(() -> editText2.setText(String.valueOf(gewichtung)));
-	
-	// update radio buttons
-//	btnRadioTP.setEnabled(false);
-//	btnRadioAufgabe.setEnabled(true);
-
-	}
-	
-	
-	
-	public void updateContent(double punkteInhalt, double punkteSprache, double gewichtung) {
-		// update radio buttons
-//		btnRadioTP.setEnabled(false);
-//		btnRadioAufgabe.setEnabled(true);
-
-		// update labels
-		lblText1.setText(INHALT);
-		lblText1.requestLayout();
-		lblText2.setText(SPRACHE);
-		lblText2.requestLayout();
-		lblText3.setText(GEWICHTUNG);
-		lblText3.requestLayout();
-
-		// update edit text fields
-		editText1.setText(String.valueOf(punkteInhalt));
-		editText2.setText(String.valueOf(punkteSprache));
-		editText3.setText(String.valueOf(gewichtung));				
 	}
 }

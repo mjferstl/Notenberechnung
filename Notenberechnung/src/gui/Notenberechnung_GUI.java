@@ -50,6 +50,8 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 
 public class Notenberechnung_GUI {
 
@@ -192,6 +194,24 @@ public class Notenberechnung_GUI {
 		lblAufgaben.setText("Aufgaben");
 
 		table = new Table(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				if ((table.getItemCount() > 0)) {
+					int selectedIndex = table.getSelectionIndex();
+					TableItem ti = table.getItem(selectedIndex);
+					if (ti.getText(0) == "Aufgabe") {
+						Aufgabe a = Aufgabe.parseTextToAufgabe(ti.getText(1));
+						NeueAufgabeDialog nad = new NeueAufgabeDialog(shell, a, selectedIndex);
+						nad.open();
+					} else if (ti.getText(0) == "Textproduktion") {
+						Textproduktion t = Textproduktion.parseTextToTextproduktion(ti.getText(1));
+						NeueAufgabeDialog nad = new NeueAufgabeDialog(shell, t, selectedIndex);
+						nad.open();
+					}
+				}		
+			}
+		});
 		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
 		gd_table.heightHint = 25;
 		table.setLayoutData(gd_table);
@@ -351,6 +371,12 @@ public class Notenberechnung_GUI {
 		} else if (table.getItemCount() == 0) {
 			updateLogwindow("Keine Aufgaben angelegt...", "red");
 		} else {
+			
+			// remove all current item from the lists and formulas
+			resultColumns.clear();
+			columnNames.clear();	
+			totalPointsFormula = "";
+			
 			Workbook workbook = new XSSFWorkbook();
 			Sheet sheet = workbook.createSheet("Klasse");
 
@@ -513,10 +539,23 @@ public class Notenberechnung_GUI {
 	/**
 	 * add a task to the table
 	 * 
-	 * @param task: object of class Aufgabe
+	 * @param task: object of interface Aufgabentyp
 	 */
-	public static void addAufgabentyp(Aufgabentyp task) {
+	public static void addTask(Aufgabentyp task) {
 		TableItem item = new TableItem(table, SWT.NONE);
+		item.setText(0, task.getBezeichnung());
+		item.setText(1, task.getConfig());
+		fitTableColumnsWidth(table);
+	}
+	
+	/**
+	 * add a task to the table
+	 * 
+	 * @param task: object of interface Aufgabentyp
+	 * @param tableIndex: index of the table item to be updated
+	 */
+	public static void updateTask(Aufgabentyp task, int tableIndex) {		
+		TableItem item = table.getItem(tableIndex);
 		item.setText(0, task.getBezeichnung());
 		item.setText(1, task.getConfig());
 		fitTableColumnsWidth(table);
@@ -652,6 +691,7 @@ public class Notenberechnung_GUI {
 		}
 
 		resultColumns.add(columnNames.get(nextColumn + 2));
+		
 		totalPointsFormula = totalPointsFormula + "(" + columnNames.get(nextColumn) + (startRow) + "+"
 				+ columnNames.get(nextColumn + 1) + (startRow) + ")*" + columnNames.get(nextColumn + 2) + (startRow)
 				+ "+";
