@@ -146,6 +146,15 @@ public class Notenberechnung_GUI {
 		lblKlassenliste.setText("Klassenliste");
 
 		lblKlasseDatei = new Label(shell, SWT.NONE);
+		lblKlasseDatei.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				if ((klasse != null) && (klasse.getSize() > 0)) {
+					PupilsListDialog pld = new PupilsListDialog(shell, klasse);
+					pld.open();
+				}
+			}
+		});
 		lblKlasseDatei.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblKlasseDatei.setBackground(SWTResourceManager.getColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		

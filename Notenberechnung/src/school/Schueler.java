@@ -3,6 +3,8 @@ package school;
 public class Schueler {
 
 	private String Vorname, Nachname;
+	public final static String VORNAME = "Vorname";
+	public final static String NACHNAME = "Nachname";
 	
 	public Schueler(String Vorname, String Nachname) {
 		this.Vorname = Vorname;

@@ -52,13 +52,16 @@ public class Schulklasse {
 			Pattern p = Pattern.compile("(\\w*.?\\s*-?\\w*.?)(,?\\s+)(\\w*\\s*-?\\w*)");
 			String line, firstname, lastname;
 			
+			// remove all current pupils
+			schulklasse.clear();
+			
 			while (sc.hasNextLine()) {
 				line = sc.nextLine();
 				Matcher m = p.matcher(line);
 				if (m.matches()) {
 					firstname = m.group(1).trim();
 					lastname = m.group(3).trim();
-					Schueler schueler = new Schueler(lastname,firstname);
+					Schueler schueler = new Schueler(firstname,lastname);
 					addSchueler(schueler);
 				}
 				else {
