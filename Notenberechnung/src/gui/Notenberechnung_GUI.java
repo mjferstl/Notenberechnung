@@ -61,6 +61,7 @@ public class Notenberechnung_GUI {
 	// integers
 	private int nextColumn;
 	private int totalPointsColumnIndex, totalNotenColumnindex, notenBereicheEndeColumnIndex;
+	private int pointsMaxColumn, pointsMinColumn, percentColumn, gradesColumn, countGradesColumn;
 	private final int startRow = 4; // funefte Zeile
 
 	// strings
@@ -531,9 +532,9 @@ public class Notenberechnung_GUI {
 		notenChart.setChartTitle("Notenverteilung");
 		notenChart.setxAxisLabel("Noten");
 		notenChart.setyAxisLabel("Anzahl");
-		notenChart.setXData(new CellRangeAddress(startRow, startRow + 5, nextColumn, nextColumn));
+		notenChart.setXData(new CellRangeAddress(startRow, startRow + 5, nextColumn + 4, nextColumn + 4));
 		notenChart.setYData(new CellRangeAddress(startRow, startRow + 5, nextColumn + 5, nextColumn + 5));
-		notenChart.setPositionInSheet(startRow + 7, startRow + 17, nextColumn, nextColumn + 6);
+		notenChart.setPositionInSheet(startRow + 9, startRow + 19, nextColumn, nextColumn + 6);
 		notenChart.createChart();
 	}
 
@@ -805,23 +806,29 @@ public class Notenberechnung_GUI {
 	private void addGrading(Sheet sheet) {
 
 		int rowNum = startRow - 1;
+		
+		pointsMaxColumn = nextColumn;
+		pointsMinColumn = nextColumn + 2;
+		percentColumn = nextColumn + 3;
+		gradesColumn = nextColumn + 4;
+		countGradesColumn = nextColumn + 5;
 
 		// headers
-		setCellText(sheet, rowNum, nextColumn, "Note");
-		sheet.setColumnWidth(nextColumn, 10 * 256);
-		setCellText(sheet, rowNum, nextColumn + 1, "Prozent");
-		sheet.setColumnWidth(nextColumn + 1, 10 * 256);
-		setCellText(sheet, rowNum, nextColumn + 2, "Punktebereich");
-		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, nextColumn + 2, nextColumn + 4));
-		sheet.setColumnWidth(nextColumn + 3, 3 * 256); // Minus-Zeichen
-		setCellText(sheet, rowNum, nextColumn + 5, "Anzahl");
+		setCellText(sheet, rowNum, pointsMaxColumn, "Punktebereich");
+		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, pointsMaxColumn, pointsMinColumn));
+		sheet.setColumnWidth(pointsMaxColumn + 1, 3 * 256); // Minus-Zeichen
+		setCellText(sheet, rowNum, percentColumn, "Prozent");
+		sheet.setColumnWidth(percentColumn, 10 * 256);
+		setCellText(sheet, rowNum, gradesColumn, "Note");
+		sheet.setColumnWidth(gradesColumn, 10 * 256);
+		setCellText(sheet, rowNum, countGradesColumn, "Anzahl");
+		
+		sheet.getRow(rowNum).getCell(pointsMaxColumn).setCellStyle(boldCenteredStyle);
+		sheet.getRow(rowNum).getCell(percentColumn).setCellStyle(boldCenteredStyle);
+		sheet.getRow(rowNum).getCell(gradesColumn).setCellStyle(boldCenteredStyle);
+		sheet.getRow(rowNum).getCell(countGradesColumn).setCellStyle(boldCenteredStyle);
 
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(boldCenteredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 2).setCellStyle(boldCenteredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 5).setCellStyle(boldCenteredStyle);
-
-		notenBereicheEndeColumnIndex = nextColumn + 4;
+		notenBereicheEndeColumnIndex = pointsMinColumn;
 
 		CellRangeAddress cra = new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 5);
 		setRegionBorderThin(cra, sheet);
@@ -835,29 +842,44 @@ public class Notenberechnung_GUI {
 
 		// Noten
 		for (int i = 1; i <= 6; i++) {
-			setCellText(sheet, rowNum + i - 1, nextColumn, i);
-			setCellText(sheet, rowNum + i - 1, nextColumn + 1, prozentbereiche[i - 1]);
+			setCellText(sheet, rowNum + i - 1, gradesColumn, i);
+			setCellText(sheet, rowNum + i - 1, percentColumn, prozentbereiche[i - 1]);
 			if (i == 1) {
 				form = cellTotalPoints;
 			} else {
-				form = "ROUNDDOWN(" + columnNames.get(nextColumn + 1) + (rowNum + i - 1) + "*" + cellTotalPoints
+				form = "ROUNDDOWN(" + columnNames.get(percentColumn) + (rowNum + i - 1) + "*" + cellTotalPoints
 						+ "/100*2,0)/2-0.5";
 			}
-			setCellTextAsFormula(sheet, rowNum + i - 1, nextColumn + 2, form);
-			sheet.getRow(rowNum + i - 1).getCell(nextColumn + 2).setCellStyle(rightStyle);
+			setCellTextAsFormula(sheet, rowNum + i - 1, pointsMaxColumn, form);
+			sheet.getRow(rowNum + i - 1).getCell(pointsMaxColumn).setCellStyle(rightStyle);
 
-			setCellText(sheet, rowNum + i - 1, nextColumn + 3, "-");
-			sheet.getRow(rowNum + i - 1).getCell(nextColumn + 3).setCellStyle(centeredStyle);
+			setCellText(sheet, rowNum + i - 1, pointsMaxColumn + 1, "-");
+			sheet.getRow(rowNum + i - 1).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
 
-			form = "ROUNDDOWN(" + columnNames.get(nextColumn + 1) + (rowNum + i) + "*" + cellTotalPoints
+			form = "ROUNDDOWN(" + columnNames.get(percentColumn) + (rowNum + i) + "*" + cellTotalPoints
 					+ "/100*2,0)/2";
-			setCellTextAsFormula(sheet, rowNum + i - 1, nextColumn + 4, form);
-			sheet.getRow(rowNum + i - 1).getCell(nextColumn + 4).setCellStyle(leftStyle);
+			setCellTextAsFormula(sheet, rowNum + i - 1, pointsMinColumn, form);
+			sheet.getRow(rowNum + i - 1).getCell(pointsMinColumn).setCellStyle(leftStyle);
 		}
 
 		// borders
 		setRegionBorderThin(new CellRangeAddress(rowNum, rowNum + 5, nextColumn, nextColumn + 5), sheet);
-
+		
+		// average grade
+		form = "(";
+		for (int i=1; i<7; i++) {
+			form = form + columnNames.get(countGradesColumn) + (rowNum + i) + "*" + columnNames.get(gradesColumn) + (rowNum + i) + "+";
+		}
+		form = form.substring(0, form.length()-1);
+		form = form + ")/SUM(" + columnNames.get(countGradesColumn) + (rowNum + 1) + ":" + columnNames.get(countGradesColumn) + (rowNum + 6) + ")";
+		setCellTextAsFormula(sheet, rowNum + 6, countGradesColumn, form);
+		
+		// percentage of grades of 5 and 6
+		form = "SUM(" + columnNames.get(countGradesColumn) + (rowNum + 5) + ":" + columnNames.get(countGradesColumn) + (rowNum + 6) + ")";
+		form = form + "/SUM(" + columnNames.get(countGradesColumn) + (rowNum+1) + ":" + columnNames.get(countGradesColumn) + (rowNum+6) + ")*100";
+		setCellTextAsFormula(sheet, rowNum + 7, countGradesColumn, form);
+		setCellText(sheet, rowNum + 7, countGradesColumn - 1, "% 5 u. 6");
+		sheet.getRow(rowNum + 7).getCell(countGradesColumn - 1).setCellStyle(rightStyle);
 	}
 
 	/**
@@ -948,8 +970,8 @@ public class Notenberechnung_GUI {
 		for (int i = 1; i <= 6; i++) {
 			formula = "COUNTIF(" + columnNames.get(totalNotenColumnindex) + (startRow + 1) + ":"
 					+ columnNames.get(totalNotenColumnindex) + (startRow + klasse.getSize()) + ","
-					+ columnNames.get(notenBereicheEndeColumnIndex - 4) + (startRow + i) + ")";
-			setCellTextAsFormula(sheet, startRow + i - 1, notenBereicheEndeColumnIndex + 1, formula);
+					+ columnNames.get(notenBereicheEndeColumnIndex + 2) + (startRow + i) + ")";
+			setCellTextAsFormula(sheet, startRow + i - 1, notenBereicheEndeColumnIndex + 3, formula);
 		}		
 	}
 
