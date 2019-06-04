@@ -11,6 +11,7 @@ public class Aufgabe implements Aufgabentyp{
 	private double be, gewichtung;
 	public final static String BE = "BE";
 	public final static String GEWICHTUNG = "Gewichtung";
+	public final static String TYPE = "A";
 	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern pa = Pattern.compile(CONFIG_PATTERN);
 	
@@ -26,10 +27,10 @@ public class Aufgabe implements Aufgabentyp{
 		this.gewichtung = Gewichtung;
 	}
 	
-	public static Aufgabe parseTextToAufgabe(String text) {
+	public static Aufgabe parseTextToAufgabe(String bezeichnung, String text) {
 		
 		Matcher m;
-		Aufgabe a = new Aufgabe("Aufgabe", 0);
+		Aufgabe a = new Aufgabe(bezeichnung, 0);
 		
 		m = pa.matcher(text);
 		
@@ -40,6 +41,7 @@ public class Aufgabe implements Aufgabentyp{
 					double gewichtung = Double.parseDouble(m.group(2));
 					a.setBe(be);
 					a.setGewichtung(gewichtung);
+					a.setBezeichnung(bezeichnung);
 					return a;
 				} catch (NumberFormatException e) {
 					Notenberechnung_GUI.updateLogwindow("Bitte nur Zahlen eingeben","red");
@@ -83,7 +85,7 @@ public class Aufgabe implements Aufgabentyp{
 	}
 	
 	public String getType() {
-		return "Aufgabe";
+		return Aufgabe.TYPE;
 	}
 	
 	public String getNameBe() {

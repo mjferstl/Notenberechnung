@@ -58,6 +58,9 @@ public class NeueAufgabeDialog extends Dialog {
 
 	// objects
 	private Aufgabentyp importedTask;
+	private Text tbTaskName;
+	private Label sepHoriz;
+	private GridData data_1;
 
 	/**
 	 * InputDialog constructor
@@ -66,7 +69,7 @@ public class NeueAufgabeDialog extends Dialog {
 	 */
 	public NeueAufgabeDialog(Shell parent) {
 		// Pass the default styles here
-		this(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+		this(parent, SWT.TITLE | SWT.APPLICATION_MODAL);
 	}
 
 	/**
@@ -107,7 +110,7 @@ public class NeueAufgabeDialog extends Dialog {
 	public void open() {
 		// Create the dialog window
 		shell_1 = new Shell(getParent(), getStyle());
-		shell_1.setSize(180, 360);
+		shell_1.setSize(216, 301);
 		shell_1.setText(getText());
 		createContents(shell_1);
 		shell_1.pack();
@@ -138,7 +141,7 @@ public class NeueAufgabeDialog extends Dialog {
 
 		grpAufgabentyp = new Group(shell_1, SWT.NONE);
 		GridData gd_grpAufgabentyp = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
-		gd_grpAufgabentyp.heightHint = 72;
+		gd_grpAufgabentyp.heightHint = 73;
 		grpAufgabentyp.setLayoutData(gd_grpAufgabentyp);
 		grpAufgabentyp.setText("Aufgabentyp");
 
@@ -184,6 +187,18 @@ public class NeueAufgabeDialog extends Dialog {
 			}
 		});
 		btnRadioTP.setText(TP);
+		
+		Label lblTaskName = new Label(shell_1, SWT.NONE);
+		lblTaskName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		lblTaskName.setText("Bezeichnung");
+		
+		tbTaskName = new Text(shell_1, SWT.BORDER);
+		tbTaskName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		
+		sepHoriz = new Label(shell_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridData gd_sepHoriz = new GridData(SWT.CENTER, SWT.FILL, false, false, 2, 1);
+		gd_sepHoriz.widthHint = 144;
+		sepHoriz.setLayoutData(gd_sepHoriz);
 
 		// ---------------------------------------------------------------------------------------
 		// Label Text1
@@ -227,27 +242,41 @@ public class NeueAufgabeDialog extends Dialog {
 				if (btnRadioAufgabe.getSelection()) {
 					double be = getDoubleFromInput(editText1.getText());
 					double gewichtung = getDoubleFromInput(editText2.getText());
+					// get the specified task name
+					String bezeichnung = tbTaskName.getText();
+					if (bezeichnung == "") {
+						bezeichnung = "Aufgabe";
+					}
+					
 					if (gewichtung == 0.0) {
 						gewichtung = 1.0;
 					}
 					if (be != errorId && gewichtung != errorId) {
-						Aufgabe a = new Aufgabe("Aufgabe", be, gewichtung);
-						if (loadTask) {
-							Notenberechnung_GUI.updateTask(a, tableIndex);
-						} else {
-							Notenberechnung_GUI.addTask(a);
-						}
-						shell.close();
+						
+							Aufgabe a = new Aufgabe(bezeichnung, be, gewichtung);
+							if (loadTask) {
+								Notenberechnung_GUI.updateTask(a, tableIndex);
+							} else {
+								Notenberechnung_GUI.addTask(a);
+							}
+							shell.close();
+						
 					}
 				} else if (btnRadioTP.getSelection()) {
 					double inhalt = getDoubleFromInput(editText1.getText());
 					double sprache = getDoubleFromInput(editText2.getText());
 					double gewichtung = getDoubleFromInput(editText3.getText());
+					// get the specified task name
+					String bezeichnung = tbTaskName.getText();
+					if (bezeichnung == "") {
+						bezeichnung = "Textproduktion";
+					}
+					
 					if (gewichtung == 0.0) {
 						gewichtung = 1.0;
 					}
 					if (inhalt != errorId && sprache != errorId && gewichtung != errorId) {
-						Textproduktion tp = new Textproduktion("Textproduktion", inhalt, sprache, gewichtung);
+						Textproduktion tp = new Textproduktion(bezeichnung, inhalt, sprache, gewichtung);
 						if (loadTask) {
 							Notenberechnung_GUI.updateTask(tp, tableIndex);
 						} else {
@@ -263,8 +292,9 @@ public class NeueAufgabeDialog extends Dialog {
 		// so that pressing it will set input to null
 		Button cancel = new Button(shell, SWT.PUSH);
 		cancel.setText("Abbrechen");
-		data = new GridData(GridData.FILL_HORIZONTAL);
-		cancel.setLayoutData(data);
+		data_1 = new GridData(GridData.FILL_HORIZONTAL);
+		data_1.grabExcessHorizontalSpace = false;
+		cancel.setLayoutData(data_1);
 		cancel.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				shell.close();
@@ -289,6 +319,9 @@ public class NeueAufgabeDialog extends Dialog {
 	 * 
 	 */
 	private void loadImportedTask() {
+		
+		tbTaskName.setText(importedTask.getBezeichnung());
+		
 		if (importedTask.getClass() == Aufgabe.class) {
 			lblText1.setText(Aufgabe.BE);
 			lblText2.setText(Aufgabe.GEWICHTUNG);

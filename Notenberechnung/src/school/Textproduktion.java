@@ -12,6 +12,7 @@ public class Textproduktion implements Aufgabentyp{
 	public final static String INHALT = "Inhalt";
 	public final static String SPRACHE = "Sprache";
 	public final static String GEWICHTUNG = Aufgabe.GEWICHTUNG;
+	public final static String TYPE = "T";
 	private final static String CONFIG_PATTERN = "Inhalt: (\\d*.*\\d*), Sprache: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern pt = Pattern.compile(CONFIG_PATTERN);
 
@@ -66,7 +67,7 @@ public class Textproduktion implements Aufgabentyp{
 	}
 	
 	public String getType() {
-		return "Textproduktion";
+		return Textproduktion.TYPE;
 	}
 	
 	public String getNameInhalt() {
@@ -81,9 +82,9 @@ public class Textproduktion implements Aufgabentyp{
 		return GEWICHTUNG;
 	}
 
-	public static Textproduktion parseTextToTextproduktion(String text) {
+	public static Textproduktion parseTextToTextproduktion(String bezeichnung, String text) {
 		Matcher m;
-		Textproduktion tp = new Textproduktion("Textproduktion", 0, 0);
+		Textproduktion tp = new Textproduktion(bezeichnung, 0, 0);
 		
 		m = pt.matcher(text);
 		
@@ -93,6 +94,7 @@ public class Textproduktion implements Aufgabentyp{
 					double inhalt = Double.parseDouble(m.group(1));
 					double sprache = Double.parseDouble(m.group(2));
 					double gewichtung = Double.parseDouble(m.group(3));
+					
 					tp.setPunkteInhalt(inhalt);
 					tp.setPunkteSprache(sprache);
 					tp.setGewichtung(gewichtung);

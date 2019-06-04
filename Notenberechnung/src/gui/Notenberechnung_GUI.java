@@ -70,7 +70,7 @@ public class Notenberechnung_GUI {
 	private String totalPointsFormula = "";
 	private final String[] alphabet = { "", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
 			"P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-	private final String[] titles = { "Aufgabentyp", "Bewertung" };
+	private final String[] titles = {"", "Bezeichnung", "Bewertung" };
 	private final static String[] schuelerHeader = { "Nachname", "Vorname" };
 	private List<String> columnNames = new ArrayList<String>();
 	private List<String> resultColumns = new ArrayList<String>();
@@ -200,12 +200,12 @@ public class Notenberechnung_GUI {
 				if ((table.getItemCount() > 0)) {
 					int selectedIndex = table.getSelectionIndex();
 					TableItem ti = table.getItem(selectedIndex);
-					if (ti.getText(0) == "Aufgabe") {
-						Aufgabe a = Aufgabe.parseTextToAufgabe(ti.getText(1));
+					if (ti.getText(0) == Aufgabe.TYPE) {
+						Aufgabe a = Aufgabe.parseTextToAufgabe(ti.getText(1),ti.getText(2));
 						NeueAufgabeDialog nad = new NeueAufgabeDialog(shell, a, selectedIndex);
 						nad.open();
-					} else if (ti.getText(0) == "Textproduktion") {
-						Textproduktion t = Textproduktion.parseTextToTextproduktion(ti.getText(1));
+					} else if (ti.getText(0) == Textproduktion.TYPE) {
+						Textproduktion t = Textproduktion.parseTextToTextproduktion(ti.getText(1),ti.getText(2));
 						NeueAufgabeDialog nad = new NeueAufgabeDialog(shell, t, selectedIndex);
 						nad.open();
 					}
@@ -499,19 +499,20 @@ public class Notenberechnung_GUI {
 	 */
 	private void addAufgaben(Sheet sheet) {
 		
-		String text;
+		String bezeichnung, text;
 		for (int i = 0; i < table.getItemCount(); i++) {
 			TableItem ti = table.getItem(i);
-			text = ti.getText(1);
+			bezeichnung = ti.getText(1);
+			text = ti.getText(2);
 			switch (ti.getText(0)) {
-			case "Aufgabe":
-				Aufgabe a = Aufgabe.parseTextToAufgabe(text);
+			case Aufgabe.TYPE:
+				Aufgabe a = Aufgabe.parseTextToAufgabe(bezeichnung, text);
 				if (a != null) {
 					aufgabeToXlsx(sheet, a);
 				}
 				break;
-			case "Textproduktion":
-				Textproduktion tp = Textproduktion.parseTextToTextproduktion(text);
+			case Textproduktion.TYPE:
+				Textproduktion tp = Textproduktion.parseTextToTextproduktion(bezeichnung, text);
 				if (tp != null) {
 					TextproduktionToXlsx(sheet, tp);
 				}
@@ -543,8 +544,9 @@ public class Notenberechnung_GUI {
 	 */
 	public static void addTask(Aufgabentyp task) {
 		TableItem item = new TableItem(table, SWT.NONE);
-		item.setText(0, task.getBezeichnung());
-		item.setText(1, task.getConfig());
+		item.setText(0, task.getType());
+		item.setText(1, task.getBezeichnung());
+		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(table);
 	}
 	
@@ -556,8 +558,9 @@ public class Notenberechnung_GUI {
 	 */
 	public static void updateTask(Aufgabentyp task, int tableIndex) {		
 		TableItem item = table.getItem(tableIndex);
-		item.setText(0, task.getBezeichnung());
-		item.setText(1, task.getConfig());
+		item.setText(0, task.getType());
+		item.setText(1, task.getBezeichnung());
+		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(table);
 	}
 
@@ -1002,7 +1005,7 @@ public class Notenberechnung_GUI {
 	private void moveTableItem(int index, String direction) {
 		if (index >= 0 && (direction == "upwards" || direction == "downwards")) {
 			 TableItem ti = table.getItem(index);
-			 String[] tiContent = {ti.getText(0), ti.getText(1)};
+			 String[] tiContent = {ti.getText(0), ti.getText(1), ti.getText(2)};
 			 ti.dispose();
 			 TableItem nti = null;
 			 
