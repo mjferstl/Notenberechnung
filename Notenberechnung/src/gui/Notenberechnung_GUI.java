@@ -34,6 +34,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import extras.Chart;
@@ -62,6 +63,9 @@ public class Notenberechnung_GUI {
 	private int totalPointsColumnIndex, totalNotenColumnindex, notenBereicheEndeColumnIndex;
 	private int pointsMaxColumn, pointsMinColumn, percentColumn, gradesColumn, countGradesColumn;
 	private final int startRow = 4; // funefte Zeile
+	public final static int BACKGROUND_COLOR_RED = 245;
+	public final static int BACKGROUND_COLOR_GREEN = 245;
+	public final static int BACKGROUND_COLOR_BLUE = 245;
 
 	// strings
 	private final String ARROW_UPWARDS = "\u2191";
@@ -138,14 +142,19 @@ public class Notenberechnung_GUI {
 	 * Create contents of the window.
 	 */
 	protected void createContents() {
+		
 		shell = new Shell();
 		shell.setImage(SWTResourceManager.getImage(Notenberechnung_GUI.class, "/gui/icon.png"));
-		shell.setSize(536, 239);
+		shell.setSize(600, 250);
 		shell.setText("Erstellen einer Excel-Datei zur Notenauswertung");
 		shell.setLayout(new GridLayout(3, false));
+		shell.setBackground(new Color(shell.getDisplay(), BACKGROUND_COLOR_RED, BACKGROUND_COLOR_GREEN, BACKGROUND_COLOR_BLUE, 0));
+		
+		Color transparentBackgroundColor = new Color(shell.getDisplay(), 255, 255, 255, 0);
 
 		lblKlassenliste = new Label(shell, SWT.NONE);
 		lblKlassenliste.setText("Klassenliste");
+		lblKlassenliste.setBackground(transparentBackgroundColor);
 
 		lblKlasseDatei = new Label(shell, SWT.NONE);
 		lblKlasseDatei.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -194,6 +203,7 @@ public class Notenberechnung_GUI {
 
 		lblAufgaben = new Label(shell, SWT.NONE);
 		lblAufgaben.setText("Aufgaben");
+		lblAufgaben.setBackground(transparentBackgroundColor);
 
 		table = new Table(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
 		table.addMouseListener(new MouseAdapter() {
@@ -204,11 +214,11 @@ public class Notenberechnung_GUI {
 					TableItem ti = table.getItem(selectedIndex);
 					if (ti.getText(0) == Aufgabe.TYPE) {
 						Aufgabe a = Aufgabe.parseTextToAufgabe(ti.getText(1),ti.getText(2));
-						NeueAufgabeDialog nad = new NeueAufgabeDialog(shell, a, selectedIndex);
+						ExerciseDialog nad = new ExerciseDialog(shell, a, selectedIndex);
 						nad.open();
 					} else if (ti.getText(0) == Textproduktion.TYPE) {
 						Textproduktion t = Textproduktion.parseTextToTextproduktion(ti.getText(1),ti.getText(2));
-						NeueAufgabeDialog nad = new NeueAufgabeDialog(shell, t, selectedIndex);
+						ExerciseDialog nad = new ExerciseDialog(shell, t, selectedIndex);
 						nad.open();
 					}
 				}		
@@ -250,7 +260,7 @@ public class Notenberechnung_GUI {
 			public void widgetSelected(SelectionEvent e) {
 				
 				// open a new dialog for creating a task
-				NeueAufgabeDialog na = new NeueAufgabeDialog(shell);
+				ExerciseDialog na = new ExerciseDialog(shell);
 				na.open();
 				
 				// update the buttons
@@ -301,6 +311,7 @@ public class Notenberechnung_GUI {
 		logwindow = new Label(shell, SWT.NONE);
 		logwindow.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 		logwindow.setText(" ");
+		logwindow.setBackground(transparentBackgroundColor);
 		
 		// set all buttons enabled/disabled depending on the current contents
 		setButtonsEnables();
@@ -388,7 +399,7 @@ public class Notenberechnung_GUI {
 			int rowNum = startRow - 1;
 			nextColumn = 1;
 
-			addPupilsNames(sheet, rowNum);
+			addStudentNames(sheet, rowNum);
 
 			// increment column 2x
 			nextColumn++;
@@ -755,7 +766,7 @@ public class Notenberechnung_GUI {
 		// increment row index
 		rowNum++;
 
-		double[] prozentbereiche = { 87.5, 75, 62.5, 50, 30, 0 };
+		double[] prozentbereiche = { 87.5, 75, 62.5, 50, 33.33, 0 };
 		String form;
 		String cellTotalPoints = columnNames.get(totalPointsColumnIndex) + startRow;
 
@@ -766,7 +777,7 @@ public class Notenberechnung_GUI {
 			if (i == 1) {
 				form = cellTotalPoints;
 			} else {
-				form = "ROUNDDOWN(" + columnNames.get(percentColumn) + (rowNum + i - 1) + "*" + cellTotalPoints
+				form = "ROUND(" + columnNames.get(percentColumn) + (rowNum + i - 1) + "*" + cellTotalPoints
 						+ "/100*2,0)/2-0.5";
 			}
 			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, pointsMaxColumn, form);
@@ -775,7 +786,7 @@ public class Notenberechnung_GUI {
 			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, pointsMaxColumn + 1, "-");
 			sheet.getRow(rowNum + i - 1).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
 
-			form = "ROUNDDOWN(" + columnNames.get(percentColumn) + (rowNum + i) + "*" + cellTotalPoints
+			form = "ROUND(" + columnNames.get(percentColumn) + (rowNum + i) + "*" + cellTotalPoints
 					+ "/100*2,0)/2";
 			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, pointsMinColumn, form);
 			sheet.getRow(rowNum + i - 1).getCell(pointsMinColumn).setCellStyle(leftStyle);
@@ -865,11 +876,6 @@ public class Notenberechnung_GUI {
 		clrFmt.getThresholds()[1].setValue(3d);
 		clrFmt.getThresholds()[2].setRangeType(RangeType.NUMBER);
 		clrFmt.getThresholds()[2].setValue(6d);
-		
-//		for (int i=0; i<klasse.getSize(); i++) {
-//			Cell cell = sheet.getRow(startRow+i).getCell(totalNotenColumnindex);
-//			cell.setCellStyle(noColor);
-//		}
 
 		CellRangeAddress[] regions = { CellRangeAddress.valueOf(columnNames.get(totalNotenColumnindex) + (startRow + 1)
 				+ ":" + columnNames.get(totalNotenColumnindex) + (startRow + klasse.getSize())) };
@@ -893,6 +899,7 @@ public class Notenberechnung_GUI {
 	private void initVariables(Sheet sheet) {
 		headerFont = sheet.getWorkbook().createFont();
 		headerFont.setBold(true);
+		headerFont.setCharSet(Font.ANSI_CHARSET);
 		headerFont.setFontHeightInPoints((short) 12);
 
 		boldStyle = sheet.getWorkbook().createCellStyle();
@@ -952,7 +959,7 @@ public class Notenberechnung_GUI {
 	}
 	
 	
-	private void addPupilsNames(Sheet sheet, int row) {
+	private void addStudentNames(Sheet sheet, int row) {
 		for (int i = 0; i < schuelerHeader.length; i++) {
 			ExcelSheetFunctions.setCellText(sheet, row, nextColumn + i, schuelerHeader[i]);
 			sheet.getRow(row).getCell(nextColumn + i).setCellStyle(boldStyle);

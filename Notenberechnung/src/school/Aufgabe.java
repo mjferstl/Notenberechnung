@@ -10,7 +10,7 @@ public class Aufgabe implements Aufgabentyp{
 	private String bezeichnung;
 	private double be, gewichtung;
 	public final static String BE = "BE";
-	public final static String GEWICHTUNG = "Gewichtung";
+	public final static String WEIGHTING = "Gewichtung";
 	public final static String TYPE = "A";
 	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern pa = Pattern.compile(CONFIG_PATTERN);
@@ -93,7 +93,7 @@ public class Aufgabe implements Aufgabentyp{
 	}
 	
 	public String getNameGewichtung() {
-		return GEWICHTUNG;
+		return WEIGHTING;
 	}
 
 	public String getFirstParam() {

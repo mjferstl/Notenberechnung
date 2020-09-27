@@ -3,6 +3,7 @@ package gui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -18,7 +19,11 @@ import school.Aufgabe;
 import school.Aufgabentyp;
 import school.Textproduktion;
 
-public class NeueAufgabeDialog extends Dialog {
+public class ExerciseDialog extends Dialog {
+	
+	private final int BACKGROUND_COLOR_RED = Notenberechnung_GUI.BACKGROUND_COLOR_RED;
+	private final int BACKGROUND_COLOR_GREEN = Notenberechnung_GUI.BACKGROUND_COLOR_GREEN;
+	private final int BACKGROUND_COLOR_BLUE = Notenberechnung_GUI.BACKGROUND_COLOR_BLUE;
 
 	// doubles
 	private double errorId = 999999;
@@ -30,11 +35,8 @@ public class NeueAufgabeDialog extends Dialog {
 	// edit text fields
 	private Text editText1, editText2, editText3;
 
-	// shell
-	private Shell shell_1;
-
 	// group
-	private Group grpAufgabentyp;
+	private Group groupAufgabentyp;
 
 	// buttons
 	private Button btnRadioAufgabe, btnRadioTP;
@@ -45,9 +47,9 @@ public class NeueAufgabeDialog extends Dialog {
 	// strings
 	private final String AUFGABE = "Aufgabe";
 	private final String TP = "Textproduktion";
-	private final String INHALT = Textproduktion.INHALT;
-	private final String SPRACHE = Textproduktion.SPRACHE;
-	private final String GEWICHTUNG = Aufgabe.GEWICHTUNG;
+	private final String CONTENT = Textproduktion.CONTENT;
+	private final String LANGUAGE = Textproduktion.LANGUAGE;
+	private final String WEIGHTING = Aufgabe.WEIGHTING;
 	private final String BE = Aufgabe.BE;
 
 	// boolean
@@ -60,14 +62,14 @@ public class NeueAufgabeDialog extends Dialog {
 	private Aufgabentyp importedTask;
 	private Text tbTaskName;
 	private Label sepHoriz;
-	private GridData data_1;
+	private GridData buttonGridData;
 
 	/**
 	 * InputDialog constructor
 	 * 
 	 * @param parent: the parent
 	 */
-	public NeueAufgabeDialog(Shell parent) {
+	public ExerciseDialog(Shell parent) {
 		// Pass the default styles here
 		this(parent, SWT.TITLE | SWT.APPLICATION_MODAL);
 	}
@@ -78,7 +80,7 @@ public class NeueAufgabeDialog extends Dialog {
 	 * @param parent the parent
 	 * @param style  the style
 	 */
-	public NeueAufgabeDialog(Shell parent, int style) {
+	public ExerciseDialog(Shell parent, int style) {
 		// Let users override the default styles
 		super(parent, style);
 		setText("Aufgabe hinzufügen");
@@ -91,7 +93,7 @@ public class NeueAufgabeDialog extends Dialog {
 	 * @param parent the parent
 	 * @param style  the style
 	 */
-	public NeueAufgabeDialog(Shell parent, Aufgabentyp task, int index) {
+	public ExerciseDialog(Shell parent, Aufgabentyp task, int index) {
 		// Pass the default styles here
 		this(parent, SWT.DIALOG_TRIM);
 		setText("Aufgabe editieren");
@@ -109,14 +111,14 @@ public class NeueAufgabeDialog extends Dialog {
 	 */
 	public void open() {
 		// Create the dialog window
-		shell_1 = new Shell(getParent(), getStyle());
-		shell_1.setSize(216, 301);
-		shell_1.setText(getText());
-		createContents(shell_1);
-		shell_1.pack();
-		shell_1.open();
+		Shell shell = new Shell(getParent(), getStyle());
+		shell.setSize(350, 400);
+		shell.setText(getText());
+		createContents(shell);
+		shell.pack();
+		shell.open();
 		display = getParent().getDisplay();
-		while (!shell_1.isDisposed()) {
+		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
 			}
@@ -130,24 +132,28 @@ public class NeueAufgabeDialog extends Dialog {
 	 */
 	private void createContents(final Shell shell) {
 
-		GridLayout gl_shell_1 = new GridLayout();
-		gl_shell_1.numColumns = 2;
-		gl_shell_1.makeColumnsEqualWidth = true;
-		shell.setLayout(gl_shell_1);
+		GridLayout gridLayout = new GridLayout();
+		gridLayout.numColumns = 2;
+		gridLayout.makeColumnsEqualWidth = true;
+		shell.setLayout(gridLayout);
+		shell.setBackground(new Color(shell.getDisplay(), BACKGROUND_COLOR_RED, BACKGROUND_COLOR_GREEN, BACKGROUND_COLOR_BLUE));
+		
+		Color transparentBackgroundColor = new Color(shell.getDisplay(), 255, 255, 255, 0);
 
 		GridData data = new GridData();
-		data = new GridData(GridData.BEGINNING);
 		data = new GridData(GridData.END);
 
-		grpAufgabentyp = new Group(shell_1, SWT.NONE);
-		GridData gd_grpAufgabentyp = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
-		gd_grpAufgabentyp.heightHint = 73;
-		grpAufgabentyp.setLayoutData(gd_grpAufgabentyp);
-		grpAufgabentyp.setText("Aufgabentyp");
+		groupAufgabentyp = new Group(shell, SWT.NONE);
+		GridData gridDataAufgabentyp = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+		gridDataAufgabentyp.heightHint = 73;
+		groupAufgabentyp.setLayoutData(gridDataAufgabentyp);
+		groupAufgabentyp.setText("Aufgabentyp");
+		groupAufgabentyp.setBackground(transparentBackgroundColor);
 
 		// Radio Button Aufgabe
-		btnRadioAufgabe = new Button(grpAufgabentyp, SWT.RADIO);
+		btnRadioAufgabe = new Button(groupAufgabentyp, SWT.RADIO);
 		btnRadioAufgabe.setBounds(10, 30, 66, 16);
+		btnRadioAufgabe.setBackground(transparentBackgroundColor);
 		btnRadioAufgabe.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -155,7 +161,7 @@ public class NeueAufgabeDialog extends Dialog {
 				// if selected
 				if (source.getSelection()) {
 					lblText1.setText(BE);
-					lblText2.setText(GEWICHTUNG);
+					lblText2.setText(WEIGHTING);
 					lblText3.setText(" ");
 					lblText2.requestLayout();
 					editText1.setEnabled(true);
@@ -167,18 +173,19 @@ public class NeueAufgabeDialog extends Dialog {
 		btnRadioAufgabe.setText(AUFGABE);
 
 		// Radio Button Textproduktion
-		btnRadioTP = new Button(grpAufgabentyp, SWT.RADIO);
+		btnRadioTP = new Button(groupAufgabentyp, SWT.RADIO);
 		btnRadioTP.setBounds(10, 52, 101, 16);
+		btnRadioTP.setBackground(transparentBackgroundColor);
 		btnRadioTP.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				Button source = (Button) e.getSource();
 				// if selected
 				if (source.getSelection()) {
-					lblText1.setText(INHALT);
+					lblText1.setText(CONTENT);
 					lblText1.requestLayout();
-					lblText2.setText(SPRACHE);
-					lblText3.setText(GEWICHTUNG);
+					lblText2.setText(LANGUAGE);
+					lblText3.setText(WEIGHTING);
 					lblText3.requestLayout();
 					editText1.setEnabled(true);
 					editText2.setEnabled(true);
@@ -188,14 +195,15 @@ public class NeueAufgabeDialog extends Dialog {
 		});
 		btnRadioTP.setText(TP);
 		
-		Label lblTaskName = new Label(shell_1, SWT.NONE);
+		Label lblTaskName = new Label(shell, SWT.NONE);
 		lblTaskName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblTaskName.setText("Bezeichnung");
+		lblTaskName.setBackground(transparentBackgroundColor);
 		
-		tbTaskName = new Text(shell_1, SWT.BORDER);
-		tbTaskName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		tbTaskName = new Text(shell, SWT.BORDER);
+		tbTaskName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		sepHoriz = new Label(shell_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+		sepHoriz = new Label(shell, SWT.SEPARATOR | SWT.HORIZONTAL);
 		GridData gd_sepHoriz = new GridData(SWT.CENTER, SWT.FILL, false, false, 2, 1);
 		gd_sepHoriz.widthHint = 144;
 		sepHoriz.setLayoutData(gd_sepHoriz);
@@ -205,30 +213,34 @@ public class NeueAufgabeDialog extends Dialog {
 		lblText1 = new Label(shell, SWT.NONE);
 		lblText1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblText1.setText(BE);
+		lblText1.setBackground(transparentBackgroundColor);
 		// Edit Text
 		editText1 = new Text(shell, SWT.BORDER);
-		editText1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		editText1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
 		// ---------------------------------------------------------------------------------------
 		// Label Text2
 		lblText2 = new Label(shell, SWT.NONE);
 		lblText2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		lblText2.setText(GEWICHTUNG);
+		lblText2.setText(WEIGHTING);
+		lblText2.setBackground(transparentBackgroundColor);
 		// Edit Text
 		editText2 = new Text(shell, SWT.BORDER);
-		editText2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		editText2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
 		// ---------------------------------------------------------------------------------------
 		// Label Text3
 		lblText3 = new Label(shell, SWT.NONE);
 		lblText3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		lblText3.setText("");
+		lblText3.setBackground(transparentBackgroundColor);
 		// Edit Text
 		editText3 = new Text(shell, SWT.BORDER);
-		editText3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		editText3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-		logwindow = new Label(shell_1, SWT.NONE);
+		logwindow = new Label(shell, SWT.NONE);
 		logwindow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		logwindow.setBackground(transparentBackgroundColor);
 
 		// Create the OK button and add a handler
 		// so that pressing it will set input
@@ -292,9 +304,9 @@ public class NeueAufgabeDialog extends Dialog {
 		// so that pressing it will set input to null
 		Button cancel = new Button(shell, SWT.PUSH);
 		cancel.setText("Abbrechen");
-		data_1 = new GridData(GridData.FILL_HORIZONTAL);
-		data_1.grabExcessHorizontalSpace = false;
-		cancel.setLayoutData(data_1);
+		buttonGridData = new GridData(GridData.FILL_HORIZONTAL);
+		buttonGridData.grabExcessHorizontalSpace = false;
+		cancel.setLayoutData(buttonGridData);
 		cancel.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
 				shell.close();
@@ -310,8 +322,6 @@ public class NeueAufgabeDialog extends Dialog {
 		if (loadTask) {
 			loadImportedTask();
 		}
-		
-		// TODO: better resizing of the shell_1 when loading data of the format \d\.0
 	}
 
 	/**
@@ -324,14 +334,14 @@ public class NeueAufgabeDialog extends Dialog {
 		
 		if (importedTask.getClass() == Aufgabe.class) {
 			lblText1.setText(Aufgabe.BE);
-			lblText2.setText(Aufgabe.GEWICHTUNG);
+			lblText2.setText(Aufgabe.WEIGHTING);
 			lblText3.setText("");
 			btnRadioAufgabe.setSelection(true);
 			btnRadioTP.setSelection(false);
 			editText3.setEnabled(false);
 		} else if (importedTask.getClass() == Textproduktion.class) {
-			lblText1.setText(Textproduktion.INHALT);
-			lblText2.setText(Textproduktion.SPRACHE);
+			lblText1.setText(Textproduktion.CONTENT);
+			lblText2.setText(Textproduktion.LANGUAGE);
 			lblText3.setText(Textproduktion.GEWICHTUNG);
 			btnRadioAufgabe.setSelection(false);
 			btnRadioTP.setSelection(true);
