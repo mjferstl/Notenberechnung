@@ -48,3 +48,7 @@ Stephen 		Hawking
 Werner Karl 	Heisenberg
 Wilhelm Conrad 	Roentgen
 Wolfgang Ernst 	Pauli
+Ali				Gülen
+Patrick			Zöllner
+Heinz			Graß
+Erwin			Martinéz
