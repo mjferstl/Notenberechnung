@@ -15,9 +15,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import school.Aufgabe;
-import school.Aufgabentyp;
-import school.Textproduktion;
+import school.NormalExercise;
+import school.ExerciseInterface;
+import school.TextproductionExercise;
 
 public class ExerciseDialog extends Dialog {
 	
@@ -47,10 +47,10 @@ public class ExerciseDialog extends Dialog {
 	// strings
 	private final String AUFGABE = "Aufgabe";
 	private final String TP = "Textproduktion";
-	private final String CONTENT = Textproduktion.CONTENT;
-	private final String LANGUAGE = Textproduktion.LANGUAGE;
-	private final String WEIGHTING = Aufgabe.WEIGHTING;
-	private final String BE = Aufgabe.BE;
+	private final String CONTENT = TextproductionExercise.CONTENT;
+	private final String LANGUAGE = TextproductionExercise.LANGUAGE;
+	private final String WEIGHTING = NormalExercise.WEIGHTING;
+	private final String BE = NormalExercise.BE;
 
 	// boolean
 	private boolean loadTask = false;
@@ -59,7 +59,7 @@ public class ExerciseDialog extends Dialog {
 	private int tableIndex;
 
 	// objects
-	private Aufgabentyp importedTask;
+	private ExerciseInterface importedTask;
 	private Text tbTaskName;
 	private Label sepHoriz;
 	private GridData buttonGridData;
@@ -93,7 +93,7 @@ public class ExerciseDialog extends Dialog {
 	 * @param parent the parent
 	 * @param style  the style
 	 */
-	public ExerciseDialog(Shell parent, Aufgabentyp task, int index) {
+	public ExerciseDialog(Shell parent, ExerciseInterface task, int index) {
 		// Pass the default styles here
 		this(parent, SWT.DIALOG_TRIM);
 		setText("Aufgabe editieren");
@@ -265,7 +265,7 @@ public class ExerciseDialog extends Dialog {
 					}
 					if (be != errorId && gewichtung != errorId) {
 						
-							Aufgabe a = new Aufgabe(bezeichnung, be, gewichtung);
+							NormalExercise a = new NormalExercise(bezeichnung, be, gewichtung);
 							if (loadTask) {
 								Notenberechnung_GUI.updateTask(a, tableIndex);
 							} else {
@@ -288,7 +288,7 @@ public class ExerciseDialog extends Dialog {
 						gewichtung = 1.0;
 					}
 					if (inhalt != errorId && sprache != errorId && gewichtung != errorId) {
-						Textproduktion tp = new Textproduktion(bezeichnung, inhalt, sprache, gewichtung);
+						TextproductionExercise tp = new TextproductionExercise(bezeichnung, inhalt, sprache, gewichtung);
 						if (loadTask) {
 							Notenberechnung_GUI.updateTask(tp, tableIndex);
 						} else {
@@ -330,19 +330,19 @@ public class ExerciseDialog extends Dialog {
 	 */
 	private void loadImportedTask() {
 		
-		tbTaskName.setText(importedTask.getBezeichnung());
+		tbTaskName.setText(importedTask.getName());
 		
-		if (importedTask.getClass() == Aufgabe.class) {
-			lblText1.setText(Aufgabe.BE);
-			lblText2.setText(Aufgabe.WEIGHTING);
+		if (importedTask.getClass() == NormalExercise.class) {
+			lblText1.setText(NormalExercise.BE);
+			lblText2.setText(NormalExercise.WEIGHTING);
 			lblText3.setText("");
 			btnRadioAufgabe.setSelection(true);
 			btnRadioTP.setSelection(false);
 			editText3.setEnabled(false);
-		} else if (importedTask.getClass() == Textproduktion.class) {
-			lblText1.setText(Textproduktion.CONTENT);
-			lblText2.setText(Textproduktion.LANGUAGE);
-			lblText3.setText(Textproduktion.GEWICHTUNG);
+		} else if (importedTask.getClass() == TextproductionExercise.class) {
+			lblText1.setText(TextproductionExercise.CONTENT);
+			lblText2.setText(TextproductionExercise.LANGUAGE);
+			lblText3.setText(TextproductionExercise.WEIGHTING);
 			btnRadioAufgabe.setSelection(false);
 			btnRadioTP.setSelection(true);
 		}

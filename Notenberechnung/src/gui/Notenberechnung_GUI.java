@@ -40,11 +40,11 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import extras.Chart;
 import extras.Error;
 import extras.ExcelSheetFunctions;
-import school.Aufgabe;
-import school.Aufgabentyp;
-import school.Schueler;
-import school.Schulklasse;
-import school.Textproduktion;
+import school.NormalExercise;
+import school.ExerciseInterface;
+import school.Student;
+import school.SchoolClass;
+import school.TextproductionExercise;
 
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -94,7 +94,7 @@ public class Notenberechnung_GUI {
 	private Button btnExcelErstellen;
 	
 	// custom objects
-	private Schulklasse klasse;
+	private SchoolClass klasse;
 	
 	// fonts
 	private Font headerFont;
@@ -176,7 +176,7 @@ public class Notenberechnung_GUI {
 							lblKlasseDatei.setText("Keine Datei ausgwählt");
 							lblKlasseDatei.requestLayout();
 						} else {
-//					System.out.println("Datei ausgwählt: " + fd.getFileName().toString());
+
 							fileNameKlasse = fd.getFileName().toString();
 							String file_path = fd.getFilterPath().toString();
 
@@ -185,10 +185,10 @@ public class Notenberechnung_GUI {
 
 							updateLogwindow("Klassenliste ausgewählt", "blue");
 
-							klasse = new Schulklasse();
+							klasse = new SchoolClass();
 							String path_to_file = file_path + "\\" + fileNameKlasse;
 							Error error = new Error();
-							error = klasse.readKlassenliste(path_to_file);
+							error = klasse.readClassList(path_to_file);
 
 							// update logwindow
 							if (error.getErrorId() == 0) {
@@ -212,12 +212,12 @@ public class Notenberechnung_GUI {
 				if ((table.getItemCount() > 0)) {
 					int selectedIndex = table.getSelectionIndex();
 					TableItem ti = table.getItem(selectedIndex);
-					if (ti.getText(0) == Aufgabe.TYPE) {
-						Aufgabe a = Aufgabe.parseTextToAufgabe(ti.getText(1),ti.getText(2));
+					if (ti.getText(0) == NormalExercise.TYPE) {
+						NormalExercise a = NormalExercise.parseTextToAufgabe(ti.getText(1),ti.getText(2));
 						ExerciseDialog nad = new ExerciseDialog(shell, a, selectedIndex);
 						nad.open();
-					} else if (ti.getText(0) == Textproduktion.TYPE) {
-						Textproduktion t = Textproduktion.parseTextToTextproduktion(ti.getText(1),ti.getText(2));
+					} else if (ti.getText(0) == TextproductionExercise.TYPE) {
+						TextproductionExercise t = TextproductionExercise.parseTextToTextproduktion(ti.getText(1),ti.getText(2));
 						ExerciseDialog nad = new ExerciseDialog(shell, t, selectedIndex);
 						nad.open();
 					}
@@ -484,14 +484,14 @@ public class Notenberechnung_GUI {
 			bezeichnung = ti.getText(1);
 			text = ti.getText(2);
 			switch (ti.getText(0)) {
-			case Aufgabe.TYPE:
-				Aufgabe a = Aufgabe.parseTextToAufgabe(bezeichnung, text);
+			case NormalExercise.TYPE:
+				NormalExercise a = NormalExercise.parseTextToAufgabe(bezeichnung, text);
 				if (a != null) {
 					aufgabeToXlsx(sheet, a);
 				}
 				break;
-			case Textproduktion.TYPE:
-				Textproduktion tp = Textproduktion.parseTextToTextproduktion(bezeichnung, text);
+			case TextproductionExercise.TYPE:
+				TextproductionExercise tp = TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
 				if (tp != null) {
 					TextproduktionToXlsx(sheet, tp);
 				}
@@ -521,10 +521,10 @@ public class Notenberechnung_GUI {
 	 * 
 	 * @param task: object of interface Aufgabentyp
 	 */
-	public static void addTask(Aufgabentyp task) {
+	public static void addTask(ExerciseInterface task) {
 		TableItem item = new TableItem(table, SWT.NONE);
 		item.setText(0, task.getType());
-		item.setText(1, task.getBezeichnung());
+		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(table);
 	}
@@ -535,10 +535,10 @@ public class Notenberechnung_GUI {
 	 * @param task: object of interface Aufgabentyp
 	 * @param tableIndex: index of the table item to be updated
 	 */
-	public static void updateTask(Aufgabentyp task, int tableIndex) {		
+	public static void updateTask(ExerciseInterface task, int tableIndex) {		
 		TableItem item = table.getItem(tableIndex);
 		item.setText(0, task.getType());
-		item.setText(1, task.getBezeichnung());
+		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(table);
 	}
@@ -558,12 +558,12 @@ public class Notenberechnung_GUI {
 	 * @param sheet: excel sheet
 	 * @param task: object of class Aufagbe
 	 */
-	private void aufgabeToXlsx(Sheet sheet, Aufgabe task) {
+	private void aufgabeToXlsx(Sheet sheet, NormalExercise task) {
 
 		int rowNum = startRow - 3;
 
 		// header
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getBezeichnung());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getName());
 		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 1));
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
 		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 1), sheet);
@@ -572,7 +572,7 @@ public class Notenberechnung_GUI {
 
 		// legend of all columns
 		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getNameBe());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getNameGewichtung());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getNameWeighting());
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
 		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
@@ -584,7 +584,7 @@ public class Notenberechnung_GUI {
 		rowNum++;
 
 		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getBe());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getGewichtung());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getWeighting());
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
 		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
@@ -619,12 +619,12 @@ public class Notenberechnung_GUI {
 	 * @param: sheet: excel sheet
 	 * @param: task: object of class Textproduktion
 	 */
-	private void TextproduktionToXlsx(Sheet sheet, Textproduktion task) {
+	private void TextproduktionToXlsx(Sheet sheet, TextproductionExercise task) {
 
 		int rowNum = startRow - 3;
 
 		// header
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getBezeichnung());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getName());
 		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 2));
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
 		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 2), sheet);
@@ -632,9 +632,9 @@ public class Notenberechnung_GUI {
 		rowNum++;
 
 		// legend of all columns
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getNameInhalt());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getNameSprache());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 2, task.getNameGewichtung());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getNameContent());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getNameLanguage());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 2, task.getNameWeighting());
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn + 2).setCellStyle(centeredStyle);
@@ -649,9 +649,9 @@ public class Notenberechnung_GUI {
 		rowNum++;
 
 		// coefficients
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getPunkteInhalt());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getPunkteSprache());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 2, task.getGewichtung());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getPointsContent());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getPointsLanguage());
+		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 2, task.getWeighting());
 		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
 		sheet.getRow(rowNum).getCell(nextColumn + 2).setCellStyle(centeredStyle);
@@ -974,9 +974,9 @@ public class Notenberechnung_GUI {
 				nextColumn + schuelerHeader.length - 1), sheet);
 
 		int temp_rowNum = row;
-		for (Schueler schueler : klasse.getSchueler()) {
-			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, nextColumn, schueler.getNachname());
-			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, nextColumn + 1, schueler.getVorname());
+		for (Student schueler : klasse.getStudentList()) {
+			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, nextColumn, schueler.getSurname());
+			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, nextColumn + 1, schueler.getFirstName());
 			temp_rowNum++;
 		}
 	}

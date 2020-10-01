@@ -1,12 +1,13 @@
 package school;
 
-public interface Aufgabentyp {
+public interface ExerciseInterface {
 	
 	public String getType();
 	
 	public String getConfig();
 	
-	public String getBezeichnung();
+	public String getName();
+	public double getWeighting();
 	
 	public String getFirstParam();
 	public String getSecondParam();
