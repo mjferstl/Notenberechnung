@@ -132,7 +132,7 @@ public class Notenberechnung_GUI {
 						String selected = fd.open();
 
 						if (selected == null) {
-							updateLogwindow("Keine Datei ausgwählt", "red");
+							updateLogMessage("Keine Datei ausgwählt", "red");
 							lblKlasseDatei.setText("Keine Datei ausgwählt");
 							lblKlasseDatei.requestLayout();
 						} else {
@@ -143,7 +143,7 @@ public class Notenberechnung_GUI {
 							lblKlasseDatei.setText(fileNameKlasse);
 							lblKlasseDatei.requestLayout();
 
-							updateLogwindow("Klassenliste ausgewählt", "blue");
+							updateLogMessage("Klassenliste ausgewählt", "blue");
 
 							schoolClass = new SchoolClass();
 							String path_to_file = file_path + "\\" + fileNameKlasse;
@@ -152,9 +152,9 @@ public class Notenberechnung_GUI {
 
 							// update logwindow
 							if (error.getErrorId() == 0) {
-								updateLogwindow(error.getErrorMsg(), "green");
+								updateLogMessage(error.getErrorMsg(), "green");
 							} else {
-								updateLogwindow(error.getErrorMsg(), "red");
+								updateLogMessage(error.getErrorMsg(), "red");
 							}
 						}
 					}
@@ -262,7 +262,7 @@ public class Notenberechnung_GUI {
 		btnExcelErstellen.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateLogwindow("Excel-Datei wird erstellt...", "blue");
+				updateLogMessage("Excel-Datei wird erstellt...", "blue");
 				List<ExerciseInterface> exercises = parseExercisesFromGUI();
 				ExcelWorkbookCreator creator = new ExcelWorkbookCreator(shell, schoolClass, exercises);
 				creator.createXlsxFile();
@@ -306,8 +306,8 @@ public class Notenberechnung_GUI {
 	 * 
 	 * @param text: text to be set in the logwindow label
 	 */
-	public static void updateLogwindow(String text) {
-		updateLogwindow(text,"black");
+	public void updateLogMessage(String text) {
+		updateLogMessage(text,"black");
 	}
 
 	/**
@@ -316,7 +316,7 @@ public class Notenberechnung_GUI {
 	 * @param text: text to be set in the logwindow label
 	 * @param color: string containing the text color. possible colors: blue, red, green, black
 	 */
-	public static void updateLogwindow(String text, String color) {
+	public void updateLogMessage(String text, String color) {
 		logwindow.setText(text);
 		switch (color) {
 		case "blue":
@@ -346,17 +346,15 @@ public class Notenberechnung_GUI {
 			text = ti.getText(2);
 			switch (ti.getText(0)) {
 			case NormalExercise.SHORT_KEY:
-				NormalExercise a = NormalExercise.parseTextToAufgabe(bezeichnung, text);
-				if (a != null) {
-					exerciseList.add(a);
-					//aufgabeToXlsx(sheet, a);
+				NormalExercise exercise = NormalExercise.parseTextToAufgabe(bezeichnung, text);
+				if (exercise != null) {
+					exerciseList.add(exercise);
 				}
 				break;
 			case TextproductionExercise.SHORT_KEY:
-				TextproductionExercise tp = TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
-				if (tp != null) {
-					exerciseList.add(tp);
-					//ExcelTextproductionExercise.printTextproductionExercise(sheet, tp, startRow, nextColumn);
+				TextproductionExercise textproduction = TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
+				if (textproduction != null) {
+					exerciseList.add(textproduction);
 				}
 				break;
 			}

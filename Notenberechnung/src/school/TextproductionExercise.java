@@ -99,11 +99,11 @@ public class TextproductionExercise implements ExerciseInterface {
 					tp.setWeighting(weighting);
 					return tp;
 				} catch (NumberFormatException e) {
-					Notenberechnung_GUI.updateLogwindow("Bitte nur Zahlen eingeben","red");
+					//Notenberechnung_GUI.updateLog("Bitte nur Zahlen eingeben","red");
 					return null;
 				}								
 			} else {
-				Notenberechnung_GUI.updateLogwindow("Fehler beim Erstellen der Aufagben im *.xlsx", "red");
+				//Notenberechnung_GUI.updateLogwindow("Fehler beim Erstellen der Aufagben im *.xlsx", "red");
 				return null;
 			}							
 		} else {
