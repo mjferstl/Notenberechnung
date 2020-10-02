@@ -1,5 +1,8 @@
 package extras;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -69,6 +72,29 @@ public class ExcelSheetFunctions {
 		RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
 		RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
 		RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+	}
+	
+	
+	public static List<String> getExcelColumnNames() {
+
+		List<String> columnNames = new ArrayList<>();
+		final String[] alphabet = { "", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+				"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+
+		// Bezeichnungen der Spalten in MS-Excel
+		if (columnNames.size() == 0) {
+			for (int i = 0; i < alphabet.length; i++) {
+				for (int j = 1; j < alphabet.length; j++) {
+					if (i == 0) {
+						columnNames.add(alphabet[j] + alphabet[i]);
+					} else {
+						columnNames.add(alphabet[i] + alphabet[j]);
+					}
+				}
+			}
+		}
+		
+		return columnNames;
 	}
 
 }

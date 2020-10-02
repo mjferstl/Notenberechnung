@@ -6,29 +6,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.ColorScaleFormatting;
-import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
-import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold.RangeType;
-import org.apache.poi.ss.usermodel.ExtendedColor;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -37,12 +17,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import extras.Chart;
+import excel.ExcelWorkbookCreator;
 import extras.Error;
-import extras.ExcelSheetFunctions;
 import school.NormalExercise;
 import school.ExerciseInterface;
-import school.Student;
 import school.SchoolClass;
 import school.TextproductionExercise;
 
@@ -58,11 +36,6 @@ public class Notenberechnung_GUI {
 	// shell
 	protected Shell shell;
 	
-	// integers
-	private int nextColumn;
-	private int totalPointsColumnIndex, totalNotenColumnindex, notenBereicheEndeColumnIndex;
-	private int pointsMaxColumn, pointsMinColumn, percentColumn, gradesColumn, countGradesColumn;
-	private final int startRow = 4; // funefte Zeile
 	public final static int BACKGROUND_COLOR_RED = 245;
 	public final static int BACKGROUND_COLOR_GREEN = 245;
 	public final static int BACKGROUND_COLOR_BLUE = 245;
@@ -71,13 +44,8 @@ public class Notenberechnung_GUI {
 	private final String ARROW_UPWARDS = "\u2191";
 	private final String ARROW_DOWNWARDS = "\u2193";
 	private String fileNameKlasse = "";
-	private String totalPointsFormula = "";
-	private final String[] alphabet = { "", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
-			"P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+	
 	private final String[] titles = {"", "Bezeichnung", "Bewertung" };
-	private final static String[] schuelerHeader = { "Nachname", "Vorname" };
-	private List<String> columnNames = new ArrayList<String>();
-	private List<String> resultColumns = new ArrayList<String>();
 	
 	// labels
 	private static Label logwindow;
@@ -94,19 +62,11 @@ public class Notenberechnung_GUI {
 	private Button btnExcelErstellen;
 	
 	// custom objects
-	private SchoolClass klasse;
-	
-	// fonts
-	private Font headerFont;
-
-	// cell styles
-	private CellStyle boldStyle, boldCenteredStyle, centeredStyle, leftStyle, rightStyle, noColor;
+	private SchoolClass schoolClass;
 	
 	// tables
 	private static Table table;
 	private Group group;
-	
-	private final String DIAMETER = "\u2300";
 	
 
 	/**
@@ -185,10 +145,10 @@ public class Notenberechnung_GUI {
 
 							updateLogwindow("Klassenliste ausgewählt", "blue");
 
-							klasse = new SchoolClass();
+							schoolClass = new SchoolClass();
 							String path_to_file = file_path + "\\" + fileNameKlasse;
 							Error error = new Error();
-							error = klasse.readClassList(path_to_file);
+							error = schoolClass.readClassList(path_to_file);
 
 							// update logwindow
 							if (error.getErrorId() == 0) {
@@ -212,11 +172,11 @@ public class Notenberechnung_GUI {
 				if ((table.getItemCount() > 0)) {
 					int selectedIndex = table.getSelectionIndex();
 					TableItem ti = table.getItem(selectedIndex);
-					if (ti.getText(0) == NormalExercise.TYPE) {
+					if (ti.getText(0) == NormalExercise.SHORT_KEY) {
 						NormalExercise a = NormalExercise.parseTextToAufgabe(ti.getText(1),ti.getText(2));
 						ExerciseDialog nad = new ExerciseDialog(shell, a, selectedIndex);
 						nad.open();
-					} else if (ti.getText(0) == TextproductionExercise.TYPE) {
+					} else if (ti.getText(0) == TextproductionExercise.SHORT_KEY) {
 						TextproductionExercise t = TextproductionExercise.parseTextToTextproduktion(ti.getText(1),ti.getText(2));
 						ExerciseDialog nad = new ExerciseDialog(shell, t, selectedIndex);
 						nad.open();
@@ -303,7 +263,9 @@ public class Notenberechnung_GUI {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				updateLogwindow("Excel-Datei wird erstellt...", "blue");
-				createXlsxFile();
+				List<ExerciseInterface> exercises = parseExercisesFromGUI();
+				ExcelWorkbookCreator creator = new ExcelWorkbookCreator(shell, schoolClass, exercises);
+				creator.createXlsxFile();
 			}
 		});
 		btnExcelErstellen.setText("Excel erstellen");
@@ -371,112 +333,11 @@ public class Notenberechnung_GUI {
 		}
 		logwindow.requestLayout();
 	}
-	
-	
-	/**
-	 * Create the Excel-file
-	 */
-	private void createXlsxFile() {
 
-		if (klasse == null || klasse.isEmpty()) {
-			updateLogwindow("Keine Klassenliste ausgewählt...", "red");
-		} else if (table.getItemCount() == 0) {
-			updateLogwindow("Keine Aufgaben angelegt...", "red");
-		} else {			
-			// remove all current item from the lists and formulas
-			resultColumns.clear();
-			columnNames.clear();	
-			totalPointsFormula = "";			
-			
-			Workbook workbook = new XSSFWorkbook();
-			Sheet sheet = workbook.createSheet("Klasse");
 
-			initVariables(sheet);
-
-			for (int i = 0; i < startRow; i++)
-				sheet.createRow(i);
-
-			int rowNum = startRow - 1;
-			nextColumn = 1;
-
-			addStudentNames(sheet, rowNum);
-
-			// increment column 2x
-			nextColumn++;
-			nextColumn++;
-
-			addGradesColumn(sheet, rowNum);
-
-			// increment column 3x
-			nextColumn++;
-			nextColumn++;
-			nextColumn++;
-
-			// Alle angelegten Aufgaben einfuegen
-			addAufgaben(sheet);
-
-			// Berechnung der Gesamtpunktzahl
-			addTotalScore(sheet);
-			nextColumn++;
-
-			// Uebersicht ueber alle Noten
-			addGrading(sheet);
-
-			// Berechnung der GesamtNoten
-			addCalculationGrades(sheet);
-
-			// Diagramm hizufuegen
-			addGradingChart(sheet);
-
-			// Resize all columns to fit the content size
-			for (int i = 0; i < 6; i++)
-				sheet.autoSizeColumn(i);
-
-			// Select a filename to save the file
-			saveWorkbook(workbook);			
-		}
-	}
-
-	/**
-	 * save the current workbook to an *.xlsx file
-	 * 
-	 * @param workbook: object of type Workbook
-	 */
-	private void saveWorkbook(Workbook workbook) {
-		FileDialog fsd = new FileDialog(shell, SWT.SAVE);
-		fsd.setText("Speichern unter...");
-		String[] filterExt = { "*.xlsx" };
-		fsd.setFilterExtensions(filterExt);
-		fsd.setOverwrite(true);
-		fsd.setFileName(fileNameKlasse);
-		String selected = fsd.open();
-
-		if (selected == null) {
-			updateLogwindow("Keine Datei ausgewählt. Liste wurde nicht gespeichert.", "red");
-		} else {
-			// Write the output to a file
-			FileOutputStream fileOut;
-			try {
-				fileOut = new FileOutputStream(selected);
-				workbook.write(fileOut);
-				workbook.close();
-				fileOut.close();
-				updateLogwindow("Excel-Datei erfolgreich erstellt", "green");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				updateLogwindow("Die Datei konnte nicht erstellt werden", "red");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}		
-	}
-
-	/**
-	 * get all table items and print them to the excel sheet by calling the correct methods
-	 * 
-	 * @param sheet: excel sheet
-	 */
-	private void addAufgaben(Sheet sheet) {
+	private List<ExerciseInterface> parseExercisesFromGUI() {
+		
+		List<ExerciseInterface> exerciseList = new ArrayList<>();
 		
 		String bezeichnung, text;
 		for (int i = 0; i < table.getItemCount(); i++) {
@@ -484,36 +345,24 @@ public class Notenberechnung_GUI {
 			bezeichnung = ti.getText(1);
 			text = ti.getText(2);
 			switch (ti.getText(0)) {
-			case NormalExercise.TYPE:
+			case NormalExercise.SHORT_KEY:
 				NormalExercise a = NormalExercise.parseTextToAufgabe(bezeichnung, text);
 				if (a != null) {
-					aufgabeToXlsx(sheet, a);
+					exerciseList.add(a);
+					//aufgabeToXlsx(sheet, a);
 				}
 				break;
-			case TextproductionExercise.TYPE:
+			case TextproductionExercise.SHORT_KEY:
 				TextproductionExercise tp = TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
 				if (tp != null) {
-					TextproduktionToXlsx(sheet, tp);
+					exerciseList.add(tp);
+					//ExcelTextproductionExercise.printTextproductionExercise(sheet, tp, startRow, nextColumn);
 				}
 				break;
 			}
 		}
-	}
-
-	/**
-	 * add chart to the excel file showing the grading of all pupils
-	 * 
-	 * @param sheet: excel sheet
-	 */
-	private void addGradingChart(Sheet sheet) {
-		Chart notenChart = new Chart(sheet);
-		notenChart.setChartTitle("Notenverteilung");
-		notenChart.setxAxisLabel("Noten");
-		notenChart.setyAxisLabel("Anzahl");
-		notenChart.setXData(new CellRangeAddress(startRow, startRow + 5, nextColumn + 4, nextColumn + 4));
-		notenChart.setYData(new CellRangeAddress(startRow, startRow + 5, nextColumn + 5, nextColumn + 5));
-		notenChart.setPositionInSheet(startRow + 9, startRow + 19, nextColumn, nextColumn + 6);
-		notenChart.createChart();
+		
+		return exerciseList;
 	}
 
 	/**
@@ -523,7 +372,7 @@ public class Notenberechnung_GUI {
 	 */
 	public static void addTask(ExerciseInterface task) {
 		TableItem item = new TableItem(table, SWT.NONE);
-		item.setText(0, task.getType());
+		item.setText(0, task.getTypeShortName());
 		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(table);
@@ -537,7 +386,7 @@ public class Notenberechnung_GUI {
 	 */
 	public static void updateTask(ExerciseInterface task, int tableIndex) {		
 		TableItem item = table.getItem(tableIndex);
-		item.setText(0, task.getType());
+		item.setText(0, task.getTypeShortName());
 		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(table);
@@ -549,389 +398,6 @@ public class Notenberechnung_GUI {
 	private static void fitTableColumnsWidth(Table t) {
 		for (int i = 0, n = t.getColumnCount(); i < n; i++) {
 			t.getColumn(i).pack();
-		}
-	}
-
-	/**
-	 * print a task of type "Aufgabe" to the Excel file
-	 * 
-	 * @param sheet: excel sheet
-	 * @param task: object of class Aufagbe
-	 */
-	private void aufgabeToXlsx(Sheet sheet, NormalExercise task) {
-
-		int rowNum = startRow - 3;
-
-		// header
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getName());
-		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 1));
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 1), sheet);
-
-		rowNum++;
-
-		// legend of all columns
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getNameBe());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getNameWeighting());
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn + 1, nextColumn + 1), sheet);
-
-		sheet.setColumnWidth(nextColumn, 10 * 256);
-		sheet.setColumnWidth(nextColumn + 1, 12 * 256);
-
-		rowNum++;
-
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getBe());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getWeighting());
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn + 1, nextColumn + 1), sheet);
-
-		rowNum++;
-
-		// borders
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum + klasse.getSize() - 1, nextColumn, nextColumn + 1),
-				sheet);
-
-		for (int i = 0; i < klasse.getSize(); i++) {
-			String formula = columnNames.get(nextColumn) + (rowNum + 1) + "*" + columnNames.get(nextColumn + 1)
-					+ startRow;
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum, nextColumn + 1, formula);
-			rowNum++;
-		}
-
-		resultColumns.add(columnNames.get(nextColumn + 1));
-
-		totalPointsFormula = totalPointsFormula + columnNames.get(nextColumn) + (startRow) + "*"
-				+ columnNames.get(nextColumn + 1) + (startRow) + "+";
-
-		// increment column 2x
-		nextColumn++;
-		nextColumn++;
-	}
-
-	/**
-	 * print a task of type "Textproduktion" to the Excel file
-	 * 
-	 * @param: sheet: excel sheet
-	 * @param: task: object of class Textproduktion
-	 */
-	private void TextproduktionToXlsx(Sheet sheet, TextproductionExercise task) {
-
-		int rowNum = startRow - 3;
-
-		// header
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getName());
-		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 2));
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 2), sheet);
-
-		rowNum++;
-
-		// legend of all columns
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getNameContent());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getNameLanguage());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 2, task.getNameWeighting());
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 2).setCellStyle(centeredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn + 1, nextColumn + 1), sheet);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn + 2, nextColumn + 2), sheet);
-
-		sheet.setColumnWidth(nextColumn, 10 * 256);
-		sheet.setColumnWidth(nextColumn + 1, 10 * 256);
-		sheet.setColumnWidth(nextColumn + 2, 12 * 256);
-
-		rowNum++;
-
-		// coefficients
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, task.getPointsContent());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 1, task.getPointsLanguage());
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn + 2, task.getWeighting());
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 1).setCellStyle(centeredStyle);
-		sheet.getRow(rowNum).getCell(nextColumn + 2).setCellStyle(centeredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn), sheet);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn + 1, nextColumn + 1), sheet);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum, nextColumn + 2, nextColumn + 2), sheet);
-
-		rowNum++;
-
-		// borders
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum + klasse.getSize() - 1, nextColumn, nextColumn + 2),
-				sheet);
-
-		for (int i = 0; i < klasse.getSize(); i++) {
-			String formula = "(" + columnNames.get(nextColumn) + (rowNum + 1) + "+" + columnNames.get(nextColumn + 1)
-					+ (rowNum + 1) + ")*" + columnNames.get(nextColumn + 2) + startRow;
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum, nextColumn + 2, formula);
-			rowNum++;
-		}
-
-		resultColumns.add(columnNames.get(nextColumn + 2));
-		
-		totalPointsFormula = totalPointsFormula + "(" + columnNames.get(nextColumn) + (startRow) + "+"
-				+ columnNames.get(nextColumn + 1) + (startRow) + ")*" + columnNames.get(nextColumn + 2) + (startRow)
-				+ "+";
-
-		// increment column index 3x
-		nextColumn++;
-		nextColumn++;
-		nextColumn++;
-	}
-
-	/**
-	 * insert formulas for calculating the total scores in the excel file
-	 * 
-	 * @param sheet: excel sheet
-	 */	
-	private void addTotalScore(Sheet sheet) {
-
-		int rowNum = startRow - 3;
-		String string;
-
-		ExcelSheetFunctions.setCellText(sheet, rowNum, nextColumn, "Gesamt");
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldCenteredStyle);
-
-		// increment row index
-		rowNum++;
-		rowNum++;
-
-		String formula = totalPointsFormula.substring(0, totalPointsFormula.length() - 1);
-		ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum, nextColumn, formula);
-		sheet.getRow(rowNum).getCell(nextColumn).setCellStyle(boldStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum - 2, rowNum, nextColumn, nextColumn), sheet);
-
-		rowNum++;
-
-		// borders
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum + klasse.getSize() - 1, nextColumn, nextColumn),
-				sheet);
-
-		for (int i = 0; i < klasse.getSize(); i++) {
-			string = "";
-			for (int j = 0; j < resultColumns.size(); j++) {
-				string = string + resultColumns.get(j) + (rowNum + 1) + "+";
-			}
-			string = string.substring(0, string.length() - 1);
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum, nextColumn, string);
-			rowNum++;
-		}
-
-		totalPointsColumnIndex = nextColumn;
-
-		// increment column index
-		nextColumn++;
-	}
-
-	/**
-	 * add a grading overview of all pupils
-	 * 
-	 * @param sheet: excel sheet
-	 */
-	private void addGrading(Sheet sheet) {
-
-		int rowNum = startRow - 1;
-		
-		pointsMaxColumn = nextColumn;
-		pointsMinColumn = nextColumn + 2;
-		percentColumn = nextColumn + 3;
-		gradesColumn = nextColumn + 4;
-		countGradesColumn = nextColumn + 5;
-
-		// headers
-		ExcelSheetFunctions.setCellText(sheet, rowNum, pointsMaxColumn, "Punktebereich");
-		sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, pointsMaxColumn, pointsMinColumn));
-		sheet.setColumnWidth(pointsMaxColumn + 1, 3 * 256); // Minus-Zeichen
-		ExcelSheetFunctions.setCellText(sheet, rowNum, percentColumn, "Prozent");
-		sheet.setColumnWidth(percentColumn, 10 * 256);
-		ExcelSheetFunctions.setCellText(sheet, rowNum, gradesColumn, "Note");
-		sheet.setColumnWidth(gradesColumn, 10 * 256);
-		ExcelSheetFunctions.setCellText(sheet, rowNum, countGradesColumn, "Anzahl");
-		
-		sheet.getRow(rowNum).getCell(pointsMaxColumn).setCellStyle(boldCenteredStyle);
-		sheet.getRow(rowNum).getCell(percentColumn).setCellStyle(boldCenteredStyle);
-		sheet.getRow(rowNum).getCell(gradesColumn).setCellStyle(boldCenteredStyle);
-		sheet.getRow(rowNum).getCell(countGradesColumn).setCellStyle(boldCenteredStyle);
-
-		notenBereicheEndeColumnIndex = pointsMinColumn;
-
-		CellRangeAddress cra = new CellRangeAddress(rowNum, rowNum, nextColumn, nextColumn + 5);
-		ExcelSheetFunctions.setRegionBorderThin(cra, sheet);
-
-		// increment row index
-		rowNum++;
-
-		double[] prozentbereiche = { 87.5, 75, 62.5, 50, 33.33, 0 };
-		String form;
-		String cellTotalPoints = columnNames.get(totalPointsColumnIndex) + startRow;
-
-		// Noten
-		for (int i = 1; i <= 6; i++) {
-			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, gradesColumn, i);
-			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, percentColumn, prozentbereiche[i - 1]);
-			if (i == 1) {
-				form = cellTotalPoints;
-			} else {
-				form = "ROUND(" + columnNames.get(percentColumn) + (rowNum + i - 1) + "*" + cellTotalPoints
-						+ "/100*2,0)/2-0.5";
-			}
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, pointsMaxColumn, form);
-			sheet.getRow(rowNum + i - 1).getCell(pointsMaxColumn).setCellStyle(rightStyle);
-
-			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, pointsMaxColumn + 1, "-");
-			sheet.getRow(rowNum + i - 1).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
-
-			form = "ROUND(" + columnNames.get(percentColumn) + (rowNum + i) + "*" + cellTotalPoints
-					+ "/100*2,0)/2";
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, pointsMinColumn, form);
-			sheet.getRow(rowNum + i - 1).getCell(pointsMinColumn).setCellStyle(leftStyle);
-		}
-
-		// borders
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(rowNum, rowNum + 5, nextColumn, nextColumn + 5), sheet);
-		
-		// average grade
-		form = "(";
-		for (int i=1; i<7; i++) {
-			form = form + columnNames.get(countGradesColumn) + (rowNum + i) + "*" + columnNames.get(gradesColumn) + (rowNum + i) + "+";
-		}
-		form = form.substring(0, form.length()-1);
-		form = form + ")/SUM(" + columnNames.get(countGradesColumn) + (rowNum + 1) + ":" + columnNames.get(countGradesColumn) + (rowNum + 6) + ")";
-		ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + 6, countGradesColumn, form);
-		ExcelSheetFunctions.setCellText(sheet, rowNum + 6, countGradesColumn-1, DIAMETER);
-		sheet.getRow(rowNum + 6).getCell(countGradesColumn - 1).setCellStyle(rightStyle);
-		
-		// percentage of grades of 5 and 6
-		form = "SUM(" + columnNames.get(countGradesColumn) + (rowNum + 5) + ":" + columnNames.get(countGradesColumn) + (rowNum + 6) + ")";
-		form = form + "/SUM(" + columnNames.get(countGradesColumn) + (rowNum+1) + ":" + columnNames.get(countGradesColumn) + (rowNum+6) + ")*100";
-		ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + 7, countGradesColumn, form);
-		ExcelSheetFunctions.setCellText(sheet, rowNum + 7, countGradesColumn - 1, "% 5 u. 6");
-		sheet.getRow(rowNum + 7).getCell(countGradesColumn - 1).setCellStyle(rightStyle);
-	}
-
-	
-
-	/**
-	 * add formulas for calculation the grades of all pupils
-	 * 
-	 *  @param sheet: excel sheet
-	 */
-	private void addCalculationGrades(Sheet sheet) {
-
-		String formulaNote, formulaPlus, formulaMinus, aktCell;
-		int rowNum = startRow + 1;
-
-		for (int i = 0; i < klasse.getSize(); i++) {
-
-			aktCell = columnNames.get(totalPointsColumnIndex) + rowNum;
-
-			formulaNote = "IF(NOT(ISNUMBER(" + aktCell + ")),\"\",";
-			// Ausgangsbasis fuer die + und - Berechnung
-			formulaPlus = formulaNote + "IF(OR(";
-			formulaMinus = formulaNote + "IF(OR(";
-
-			for (int j = 1; j <= 6; j++) {
-				formulaNote = formulaNote + "IF(" + aktCell + ">=$" + columnNames.get(notenBereicheEndeColumnIndex)
-						+ "$" + (startRow + j) + "," + j + ",";
-				formulaPlus = formulaPlus + aktCell + "=$" + columnNames.get(notenBereicheEndeColumnIndex - 2) + "$"
-						+ (startRow + j) + ",";
-				formulaMinus = formulaMinus + aktCell + "=$" + columnNames.get(notenBereicheEndeColumnIndex) + "$"
-						+ (startRow + j) + ",";
-			}
-			formulaNote = formulaNote + "\"\")))))))";
-			formulaPlus = formulaPlus.substring(0, formulaPlus.length() - 1) + "),\"+\",\"\"))";
-			formulaMinus = formulaMinus.substring(0, formulaMinus.length() - 1) + "),\"-\",\"\"))";
-
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i, totalNotenColumnindex, formulaNote);
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i, totalNotenColumnindex - 1, formulaPlus);
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i, totalNotenColumnindex + 1, formulaMinus);
-
-			rowNum++;
-		}
-
-		/*
-		 * conditional formatting for the pupils grades
-		 * 1 = green, 3 = orange, 6 = red
-		 */
-		SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
-		ConditionalFormattingRule rule1 = sheetCF.createConditionalFormattingColorScaleRule();
-		ColorScaleFormatting clrFmt = rule1.getColorScaleFormatting();
-		assertEquals(3, clrFmt.getNumControlPoints());
-		String[] colors = { "00b034", "ffc000", "ff0000" };
-		assertEquals(3, clrFmt.getColors().length);
-		assertEquals(3, clrFmt.getThresholds().length);
-
-		for (int c = 0; c < 3; c++) {
-			((ExtendedColor) clrFmt.getColors()[c]).setARGBHex(colors[c]);
-		}
-
-		clrFmt.getThresholds()[0].setRangeType(RangeType.NUMBER);
-		clrFmt.getThresholds()[0].setValue(1d);
-		clrFmt.getThresholds()[1].setRangeType(RangeType.NUMBER);
-		clrFmt.getThresholds()[1].setValue(3d);
-		clrFmt.getThresholds()[2].setRangeType(RangeType.NUMBER);
-		clrFmt.getThresholds()[2].setValue(6d);
-
-		CellRangeAddress[] regions = { CellRangeAddress.valueOf(columnNames.get(totalNotenColumnindex) + (startRow + 1)
-				+ ":" + columnNames.get(totalNotenColumnindex) + (startRow + klasse.getSize())) };
-		sheetCF.addConditionalFormatting(regions, rule1);
-
-		// count the amount of all grades
-		String formula;
-		for (int i = 1; i <= 6; i++) {
-			formula = "COUNTIF(" + columnNames.get(totalNotenColumnindex) + (startRow + 1) + ":"
-					+ columnNames.get(totalNotenColumnindex) + (startRow + klasse.getSize()) + ","
-					+ columnNames.get(notenBereicheEndeColumnIndex + 2) + (startRow + i) + ")";
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i - 1, notenBereicheEndeColumnIndex + 3, formula);
-		}		
-	}
-
-	/**
-	 * method for initialising some used variables
-	 * 
-	 * @param sheet: excel sheet
-	 */
-	private void initVariables(Sheet sheet) {
-		headerFont = sheet.getWorkbook().createFont();
-		headerFont.setBold(true);
-		headerFont.setCharSet(Font.ANSI_CHARSET);
-		headerFont.setFontHeightInPoints((short) 12);
-
-		boldStyle = sheet.getWorkbook().createCellStyle();
-		boldStyle.setFont(headerFont);		
-		
-		noColor = sheet.getWorkbook().createCellStyle();
-		noColor.setFillPattern(FillPatternType.NO_FILL);
-
-		boldCenteredStyle = boldStyle;
-		boldCenteredStyle.setFont(headerFont);
-		boldCenteredStyle.setAlignment(HorizontalAlignment.CENTER);
-
-		centeredStyle = sheet.getWorkbook().createCellStyle();
-		centeredStyle.setAlignment(HorizontalAlignment.CENTER);
-
-		leftStyle = sheet.getWorkbook().createCellStyle();
-		leftStyle.setAlignment(HorizontalAlignment.LEFT);
-
-		rightStyle = sheet.getWorkbook().createCellStyle();
-		rightStyle.setAlignment(HorizontalAlignment.RIGHT);
-
-		// Bezeichnungen der Spalten in MS-Excel
-		if (columnNames.size() == 0) {
-			for (int i = 0; i < alphabet.length; i++) {
-				for (int j = 1; j < alphabet.length; j++) {
-					if (i == 0) {
-						columnNames.add(alphabet[j] + alphabet[i]);
-					} else {
-						columnNames.add(alphabet[i] + alphabet[j]);
-					}
-				}
-			}
 		}
 	}
 	
@@ -956,43 +422,5 @@ public class Notenberechnung_GUI {
 			 }			 			 
 			 nti.setText(tiContent);		
 		}
-	}
-	
-	
-	private void addStudentNames(Sheet sheet, int row) {
-		for (int i = 0; i < schuelerHeader.length; i++) {
-			ExcelSheetFunctions.setCellText(sheet, row, nextColumn + i, schuelerHeader[i]);
-			sheet.getRow(row).getCell(nextColumn + i).setCellStyle(boldStyle);
-		}
-		ExcelSheetFunctions.setRegionBorderThin(
-				new CellRangeAddress(row-2, row, nextColumn, nextColumn + schuelerHeader.length - 1), sheet);
-
-		row++;
-
-		// borders
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(row, row + klasse.getSize() - 1, nextColumn,
-				nextColumn + schuelerHeader.length - 1), sheet);
-
-		int temp_rowNum = row;
-		for (Student schueler : klasse.getStudentList()) {
-			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, nextColumn, schueler.getSurname());
-			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, nextColumn + 1, schueler.getFirstName());
-			temp_rowNum++;
-		}
-	}
-	
-	private void addGradesColumn(Sheet sheet, int row) {
-		// grades
-		ExcelSheetFunctions.setCellText(sheet, row, nextColumn, "  Noten  ");
-		sheet.addMergedRegion(new CellRangeAddress(row, row, nextColumn, nextColumn + 2));
-		sheet.getRow(row).getCell(nextColumn).setCellStyle(boldCenteredStyle);
-		ExcelSheetFunctions.setRegionBorderThin(new CellRangeAddress(row-2, row, nextColumn, nextColumn + 2), sheet);
-		row++;
-
-		// set top border for cell below class list
-		// when using the last cell of the class, the conditional formatting gets lost
-		RegionUtil.setBorderTop(BorderStyle.THIN, new CellRangeAddress(row+klasse.getSize(), row+klasse.getSize(), nextColumn, nextColumn+2), sheet);
-
-		totalNotenColumnindex = nextColumn + 1;
 	}
 }

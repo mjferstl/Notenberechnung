@@ -26,7 +26,7 @@ public class TextFileReader {
 	}
 
 	public File getFile() {
-		return file;
+		return this.file;
 	}
 
 	public void setFile(File file) {

@@ -11,7 +11,7 @@ public class NormalExercise implements ExerciseInterface {
 	private double be, weighting;
 	public final static String BE = "BE";
 	public final static String WEIGHTING = "Gewichtung";
-	public final static String TYPE = "A";
+	public final static String SHORT_KEY = "A";
 	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern PATTERN = Pattern.compile(CONFIG_PATTERN);
 	
@@ -84,8 +84,8 @@ public class NormalExercise implements ExerciseInterface {
 		return "BE: " + this.be + ", Gewichtung: " + this.weighting;
 	}
 	
-	public String getType() {
-		return NormalExercise.TYPE;
+	public int getType() {
+		return TYPE_NORMAL_EXERCISE;
 	}
 	
 	public String getNameBe() {
@@ -108,5 +108,10 @@ public class NormalExercise implements ExerciseInterface {
 
 	public String getThirdParam() {
 		return "";
+	}
+
+	@Override
+	public String getTypeShortName() {
+		return SHORT_KEY;
 	}
 }

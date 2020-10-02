@@ -12,7 +12,7 @@ public class TextproductionExercise implements ExerciseInterface {
 	public final static String CONTENT = "Inhalt";
 	public final static String LANGUAGE = "Sprache";
 	public final static String WEIGHTING = NormalExercise.WEIGHTING;
-	public final static String TYPE = "T";
+	public final static String SHORT_KEY = "T";
 	private final static String CONFIG_PATTERN = "Inhalt: (\\d*.*\\d*), Sprache: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern PATTERN = Pattern.compile(CONFIG_PATTERN);
 
@@ -65,8 +65,8 @@ public class TextproductionExercise implements ExerciseInterface {
 		return "Inhalt: " + this.pointsContent + ", Sprache: " + this.pointsLanguage + ", Gewichtung: " + this.weighting;
 	}
 	
-	public String getType() {
-		return TextproductionExercise.TYPE;
+	public int getType() {
+		return TYPE_TEXTPRODUCTION_EXERCISE;
 	}
 	
 	public String getNameContent() {
@@ -126,5 +126,8 @@ public class TextproductionExercise implements ExerciseInterface {
 		return s;
 	}
 
-
+	@Override
+	public String getTypeShortName() {
+		return SHORT_KEY;
+	}
 }
