@@ -1,5 +1,6 @@
 package school;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,16 @@ public class SchoolClass {
 		
 		// create a new list 
 		this.studentList = new ArrayList<>();
+		
+		// Get the file name without the file extension
+		String fileName = new File(pathToFile).getName();
+		String[] fileParts = fileName.split("\\.");
+		String className = "";
+		for (int i=0; i<fileParts.length-1; i++) {
+			className += fileParts[i];
+		}
+		setClassName(className);
+		System.out.println("Class name: " + className);
 		
 		// Read the file line by line
 		List<String> fileContentList;
