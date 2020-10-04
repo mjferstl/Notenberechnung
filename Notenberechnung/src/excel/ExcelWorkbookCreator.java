@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import extras.Chart;
 import extras.ExcelSheetFunctions;
+import gui.IF_Log;
 import school.ExerciseInterface;
 import school.NormalExercise;
 import school.SchoolClass;
@@ -34,7 +35,6 @@ import school.TextproductionExercise;
 public class ExcelWorkbookCreator {
 
 	private final int startRow = 4; // funefte Zeile
-	private final Shell shell;
 
 	private final String DIAMETER = "\u2300";
 
@@ -45,11 +45,30 @@ public class ExcelWorkbookCreator {
 	private SchoolClass schoolClass;
 	private List<ExerciseInterface> exerciseList;
 	private Sheet sheet;
+	
+	private UpdatePublisher parent;
+	
+	/**
+	 * Interface providing methods to publish information to the calling object.
+	 * Methods: printUpdate
+	 * @author Mathias
+	 * @date 04.10.2020
+	 * @version 1.0
+	 */
+	public interface UpdatePublisher {
+		void printUpdate(String message, int logLevel);
+		Shell getShell();
+	}
 
-	public ExcelWorkbookCreator(Shell shell, SchoolClass schoolClass, List<ExerciseInterface> exercises) {
-		this.shell = shell;
+	public ExcelWorkbookCreator(UpdatePublisher parent, SchoolClass schoolClass, List<ExerciseInterface> exercises) {
 		setSchoolClass(schoolClass);
 		setExerciseList(exercises);
+		
+		if (parent instanceof UpdatePublisher) {
+			this.parent = parent;
+		} else {
+			throw new RuntimeException("The class " + parent.toString() + " needs to implement ExcelWorkbookCreator.UpdatePublisher");
+		}
 	}
 
 	public SchoolClass getSchoolClass() {
@@ -74,9 +93,9 @@ public class ExcelWorkbookCreator {
 	public void createXlsxFile() {
 
 		if (getSchoolClass() == null || getSchoolClass().isEmpty()) {
-			// updateLogwindow("Keine Klassenliste ausgewählt...", "red");
+			printLogMessage("Keine Klassenliste ausgewählt...", IF_Log.LOG_ERROR);
 		} else if (getExerciseList().isEmpty()) {
-			// updateLogwindow("Keine Aufgaben angelegt...", "red");
+			printLogMessage("Keine Aufgaben angelegt...", IF_Log.LOG_ERROR);
 		} else {
 			// remove all current item from the lists and formulas
 			resultColumns.clear();
@@ -85,10 +104,9 @@ public class ExcelWorkbookCreator {
 			Workbook workbook = new XSSFWorkbook();
 			this.sheet = workbook.createSheet("Klasse");
 
-			// initVariables(sheet);
-
-			for (int i = 0; i < startRow; i++)
+			for (int i = 0; i < startRow; i++) {
 				sheet.createRow(i);
+			}
 
 			int rowNum = startRow - 1;
 			int columnIndex = 1;
@@ -115,7 +133,6 @@ public class ExcelWorkbookCreator {
 			addCalculationGrades(sheet, startRow, columnIndex);
 
 			// Diagramm hizufuegen
-			System.out.println(String.format("%s, %s", startRow, columnIndex));
 			addGradingChart(sheet, startRow, columnIndex);
 
 			// Resize all columns to fit the content size
@@ -370,18 +387,18 @@ public class ExcelWorkbookCreator {
 		// increment row index
 		rowNum++;
 
-		double[] prozentbereiche = { 87.5, 75, 62.5, 50, 33.33, 0 };
+		String[] percentageFormulas = {"87.5", "75.0", "62.5", "50.0", "100/3", "0"};
 		String form;
 		String cellTotalPoints = excelColumnNames.get(totalPointsColumnIndex) + startRow;
 
 		// Noten
 		for (int i = 1; i <= 6; i++) {
 			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, gradesColumn, i);
-			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, percentColumn, prozentbereiche[i - 1]);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, percentColumn, percentageFormulas[i - 1]);
 			if (i == 1) {
 				form = cellTotalPoints;
 			} else {
-				form = "ROUND(" + excelColumnNames.get(percentColumn) + (rowNum + i - 1) + "*" + cellTotalPoints
+				form = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + (rowNum + i - 1) + "*" + cellTotalPoints
 						+ "/100*2,0)/2-0.5";
 			}
 			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, pointsMaxColumn, form);
@@ -390,7 +407,7 @@ public class ExcelWorkbookCreator {
 			ExcelSheetFunctions.setCellText(sheet, rowNum + i - 1, pointsMaxColumn + 1, "-");
 			sheet.getRow(rowNum + i - 1).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
 
-			form = "ROUND(" + excelColumnNames.get(percentColumn) + (rowNum + i) + "*" + cellTotalPoints
+			form = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + (rowNum + i) + "*" + cellTotalPoints
 					+ "/100*2,0)/2";
 			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNum + i - 1, pointsMinColumn, form);
 			sheet.getRow(rowNum + i - 1).getCell(pointsMinColumn).setCellStyle(leftAlignStyle);
@@ -428,14 +445,14 @@ public class ExcelWorkbookCreator {
 	 * 
 	 */
 	private void addGradingChart(Sheet sheet, int startRow, int startColumn) {
-		Chart notenChart = new Chart(sheet);
-		notenChart.setChartTitle("Notenverteilung");
-		notenChart.setxAxisLabel("Noten");
-		notenChart.setyAxisLabel("Anzahl");
-		notenChart.setXData(new CellRangeAddress(startRow, startRow + 5, startColumn + 4, startColumn + 4));
-		notenChart.setYData(new CellRangeAddress(startRow, startRow + 5, startColumn + 5, startColumn + 5));
-		notenChart.setPositionInSheet(startRow + 9, startRow + 19, startColumn, startColumn + 6);
-		notenChart.createChart();
+		Chart gradeChart = new Chart(sheet);
+		gradeChart.setChartTitle("Notenverteilung");
+		gradeChart.setxAxisLabel("Note");
+		gradeChart.setyAxisLabel("Anzahl");
+		gradeChart.setXData(new CellRangeAddress(startRow, startRow + 5, startColumn + 4, startColumn + 4));
+		gradeChart.setYData(new CellRangeAddress(startRow, startRow + 5, startColumn + 5, startColumn + 5));
+		gradeChart.setPositionInSheet(startRow + 9, startRow + 19, startColumn, startColumn + 6);
+		gradeChart.createChart();
 	}
 
 	/**
@@ -444,7 +461,7 @@ public class ExcelWorkbookCreator {
 	 * @param workbook: object of type Workbook
 	 */
 	private void saveWorkbook(Workbook workbook) {
-		FileDialog fsd = new FileDialog(shell, SWT.SAVE);
+		FileDialog fsd = new FileDialog(parent.getShell(), SWT.SAVE);
 		fsd.setText("Speichern unter...");
 		String[] filterExt = { "*.xlsx" };
 		fsd.setFilterExtensions(filterExt);
@@ -453,8 +470,7 @@ public class ExcelWorkbookCreator {
 		String selected = fsd.open();
 
 		if (selected == null) {
-			// updateLogwindow("Keine Datei ausgewählt. Liste wurde nicht gespeichert.",
-			// "red");
+			printLogMessage("Keine Datei ausgewählt. Liste wurde nicht gespeichert.", IF_Log.LOG_ERROR);
 		} else {
 			// Write the output to a file
 			FileOutputStream fileOut;
@@ -463,13 +479,21 @@ public class ExcelWorkbookCreator {
 				workbook.write(fileOut);
 				workbook.close();
 				fileOut.close();
-				// updateLogwindow("Excel-Datei erfolgreich erstellt", "green");
+				printLogMessage("Excel-Datei erfolgreich erstellt", IF_Log.LOG_SUCCESS);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
-				// updateLogwindow("Die Datei konnte nicht erstellt werden", "red");
+				printLogMessage("Die Datei konnte nicht erstellt werden", IF_Log.LOG_ERROR);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private void printLogMessage(String message, int logLevel) {
+		if (parent != null) {
+			parent.printUpdate(message, logLevel);
+		} else {
+			throw new RuntimeException("The variable \"parent\" has not been initialized correctly.");
 		}
 	}
 

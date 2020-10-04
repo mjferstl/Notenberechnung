@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 
-public class Notenberechnung_GUI {
+public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher {
 
 	// shell
 	protected Shell shell;
@@ -132,7 +132,7 @@ public class Notenberechnung_GUI {
 						String selected = fd.open();
 
 						if (selected == null) {
-							updateLogMessage("Keine Datei ausgwählt", "red");
+							updateLogMessage("Keine Datei ausgwählt", IF_Log.LOG_ERROR);
 							lblKlasseDatei.setText("Keine Datei ausgwählt");
 							lblKlasseDatei.requestLayout();
 						} else {
@@ -143,7 +143,7 @@ public class Notenberechnung_GUI {
 							lblKlasseDatei.setText(fileNameKlasse);
 							lblKlasseDatei.requestLayout();
 
-							updateLogMessage("Klassenliste ausgewählt", "blue");
+							updateLogMessage("Klassenliste ausgewählt", IF_Log.LOG_INFO);
 
 							schoolClass = new SchoolClass();
 							String path_to_file = file_path + "\\" + fileNameKlasse;
@@ -152,9 +152,9 @@ public class Notenberechnung_GUI {
 
 							// update logwindow
 							if (error.getErrorId() == 0) {
-								updateLogMessage(error.getErrorMsg(), "green");
+								updateLogMessage(error.getErrorMsg(), IF_Log.LOG_SUCCESS);
 							} else {
-								updateLogMessage(error.getErrorMsg(), "red");
+								updateLogMessage(error.getErrorMsg(), IF_Log.LOG_ERROR);
 							}
 						}
 					}
@@ -262,10 +262,7 @@ public class Notenberechnung_GUI {
 		btnExcelErstellen.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				updateLogMessage("Excel-Datei wird erstellt...", "blue");
-				List<ExerciseInterface> exercises = parseExercisesFromGUI();
-				ExcelWorkbookCreator creator = new ExcelWorkbookCreator(shell, schoolClass, exercises);
-				creator.createXlsxFile();
+				createExcelFile();				
 			}
 		});
 		btnExcelErstellen.setText("Excel erstellen");
@@ -277,6 +274,13 @@ public class Notenberechnung_GUI {
 		
 		// set all buttons enabled/disabled depending on the current contents
 		setButtonsEnables();
+	}
+	
+	private void createExcelFile() {
+		updateLogMessage("Excel-Datei wird erstellt...", IF_Log.LOG_INFO);
+		List<ExerciseInterface> exercises = parseExercisesFromGUI();
+		ExcelWorkbookCreator creator = new ExcelWorkbookCreator(this, schoolClass, exercises);
+		creator.createXlsxFile();
 	}
 
 	
@@ -307,7 +311,7 @@ public class Notenberechnung_GUI {
 	 * @param text: text to be set in the logwindow label
 	 */
 	public void updateLogMessage(String text) {
-		updateLogMessage(text,"black");
+		updateLogMessage(text,IF_Log.LOG_INFO);
 	}
 
 	/**
@@ -316,21 +320,45 @@ public class Notenberechnung_GUI {
 	 * @param text: text to be set in the logwindow label
 	 * @param color: string containing the text color. possible colors: blue, red, green, black
 	 */
+	@Deprecated
 	public void updateLogMessage(String text, String color) {
-		logwindow.setText(text);
 		switch (color) {
 		case "blue":
-			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLUE));
+			updateLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_BLUE));
 			break;
 		case "red":
-			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
+			updateLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_RED));
 			break;
 		case "green":
-			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
+			updateLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
 			break;
 		default:
-			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
+			updateLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_BLACK));
 		}
+	}
+	
+	private void updateLogMessage(String message, int logLevel) {
+		Color logColor;
+		
+		switch (logLevel) {
+		case IF_Log.LOG_ERROR:
+			logColor = IF_Log.RED;
+			break;
+		case IF_Log.LOG_SUCCESS:
+			logColor = IF_Log.GREEN;
+			break;
+		case IF_Log.LOG_INFO:
+			logColor = IF_Log.BLACK;
+			break;
+		default:
+			logColor = IF_Log.BLACK;
+		}
+		updateLogMessage(message, logColor);
+	}
+	
+	private void updateLogMessage(String message, Color color) {
+		logwindow.setText(message);
+		logwindow.setForeground(color);
 		logwindow.requestLayout();
 	}
 
@@ -420,5 +448,20 @@ public class Notenberechnung_GUI {
 			 }			 			 
 			 nti.setText(tiContent);		
 		}
+	}
+
+	@Override
+	public void printUpdate(String message, int logLevel) {
+		updateLogMessage(message, logLevel);
+	}
+
+	@Override
+	public Shell getShell() {
+		if (this.shell != null && !this.shell.isDisposed()) {
+			return this.shell;
+		} else {
+			return null;
+		}
+			
 	}
 }
