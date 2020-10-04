@@ -6,6 +6,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,29 +44,28 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	// strings
 	private final String ARROW_UPWARDS = "\u2191";
 	private final String ARROW_DOWNWARDS = "\u2193";
-	private String fileNameKlasse = "";
 	
 	private final String[] titles = {"", "Bezeichnung", "Bewertung" };
 	
 	// labels
 	private static Label logwindow;
-	private Label lblKlasseDatei;
-	private Label lblKlassenliste;
-	private Label lblAufgaben;
+	private Label lblSchoolClassFile;
+	private Label lblSchoolClassList;
+	private Label lblExercises;
 	
 	// buttons
-	private Button btnAddTask;
+	private Button btnAddExercise;
 	private Button btnRemoveTask;
 	private Button btnMoveUp;
 	private Button btnMoveDown;
 	private Button btnBrowse;
-	private Button btnExcelErstellen;
+	private Button btnCreateExcel;
 	
 	// custom objects
 	private SchoolClass schoolClass;
 	
 	// tables
-	private static Table table;
+	private static Table tabExercises;
 	private Group group;
 	
 
@@ -112,13 +112,13 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		
 		Color transparentBackgroundColor = new Color(shell.getDisplay(), 255, 255, 255, 0);
 
-		lblKlassenliste = new Label(shell, SWT.NONE);
-		lblKlassenliste.setText("Klassenliste");
-		lblKlassenliste.setBackground(transparentBackgroundColor);
+		lblSchoolClassList = new Label(shell, SWT.NONE);
+		lblSchoolClassList.setText("Klassenliste");
+		lblSchoolClassList.setBackground(transparentBackgroundColor);
 
-		lblKlasseDatei = new Label(shell, SWT.NONE);
-		lblKlasseDatei.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-		lblKlasseDatei.setBackground(SWTResourceManager.getColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		lblSchoolClassFile = new Label(shell, SWT.NONE);
+		lblSchoolClassFile.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		lblSchoolClassFile.setBackground(SWTResourceManager.getColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
 		
 				btnBrowse = new Button(shell, SWT.NONE);
 				btnBrowse.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -133,22 +133,23 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 
 						if (selected == null) {
 							updateLogMessage("Keine Datei ausgwählt", IF_Log.LOG_ERROR);
-							lblKlasseDatei.setText("Keine Datei ausgwählt");
-							lblKlasseDatei.requestLayout();
+							lblSchoolClassFile.setText("Keine Datei ausgwählt");
+							lblSchoolClassFile.requestLayout();
 						} else {
 
-							fileNameKlasse = fd.getFileName().toString();
-							String file_path = fd.getFilterPath().toString();
+							String fileName = fd.getFileName().toString();
+							String fileDirectory = fd.getFilterPath().toString();
 
-							lblKlasseDatei.setText(fileNameKlasse);
-							lblKlasseDatei.requestLayout();
+							lblSchoolClassFile.setText(fileName);
+							lblSchoolClassFile.requestLayout();
 
 							updateLogMessage("Klassenliste ausgewählt", IF_Log.LOG_INFO);
 
 							schoolClass = new SchoolClass();
-							String path_to_file = file_path + "\\" + fileNameKlasse;
+							String filePath = fileDirectory + "\\" + fileName;
+							File selectedFile = new File(filePath);
 							Error error = new Error();
-							error = schoolClass.readClassList(path_to_file);
+							error = schoolClass.loadStudentsFromFile(selectedFile);
 
 							// update logwindow
 							if (error.getErrorId() == 0) {
@@ -161,17 +162,17 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 				});
 				btnBrowse.setText("Datei einlesen");
 
-		lblAufgaben = new Label(shell, SWT.NONE);
-		lblAufgaben.setText("Aufgaben");
-		lblAufgaben.setBackground(transparentBackgroundColor);
+		lblExercises = new Label(shell, SWT.NONE);
+		lblExercises.setText("Aufgaben");
+		lblExercises.setBackground(transparentBackgroundColor);
 
-		table = new Table(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
-		table.addMouseListener(new MouseAdapter() {
+		tabExercises = new Table(shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
+		tabExercises.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
-				if ((table.getItemCount() > 0)) {
-					int selectedIndex = table.getSelectionIndex();
-					TableItem ti = table.getItem(selectedIndex);
+				if ((tabExercises.getItemCount() > 0)) {
+					int selectedIndex = tabExercises.getSelectionIndex();
+					TableItem ti = tabExercises.getItem(selectedIndex);
 					if (ti.getText(0) == NormalExercise.SHORT_KEY) {
 						NormalExercise a = NormalExercise.parseTextToAufgabe(ti.getText(1),ti.getText(2));
 						ExerciseDialog nad = new ExerciseDialog(shell, a, selectedIndex);
@@ -186,17 +187,17 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		});
 		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 3);
 		gd_table.heightHint = 25;
-		table.setLayoutData(gd_table);
-		table.setHeaderVisible(true);
-		table.setLinesVisible(true);
+		tabExercises.setLayoutData(gd_table);
+		tabExercises.setHeaderVisible(true);
+		tabExercises.setLinesVisible(true);
 
 		for (int i = 0; i < titles.length; i++) {
-			TableColumn column = new TableColumn(table, SWT.NONE);
+			TableColumn column = new TableColumn(tabExercises, SWT.NONE);
 			column.setText(titles[i]);
 		}
 
 		for (int i = 0; i < titles.length; i++) {
-			table.getColumn(i).pack();
+			tabExercises.getColumn(i).pack();
 		}
 		
 		group = new Group(shell, SWT.NONE);
@@ -206,16 +207,16 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		btnMoveUp.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if ((table.getItemCount() != 0) && (table.getSelection() != null) && (table.getSelectionIndex() != 0)) {
-					int selectedItem = table.getSelectionIndex();
+				if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelection() != null) && (tabExercises.getSelectionIndex() != 0)) {
+					int selectedItem = tabExercises.getSelectionIndex();
 					moveTableItem(selectedItem, "upwards");
 				}
 			}
 		});
 		btnMoveUp.setText(ARROW_UPWARDS);		
-		btnAddTask = new Button(group, SWT.NONE);
-		btnAddTask.setBounds(3, 10, 50, 25);
-		btnAddTask.addSelectionListener(new SelectionAdapter() {
+		btnAddExercise = new Button(group, SWT.NONE);
+		btnAddExercise.setBounds(3, 10, 50, 25);
+		btnAddExercise.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
@@ -227,14 +228,14 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 				setButtonsEnables();
 			}
 		});
-		btnAddTask.setText("+");
+		btnAddExercise.setText("+");
 		btnRemoveTask = new Button(group, SWT.NONE);
 		btnRemoveTask.setBounds(56, 10, 50, 25);
 		btnRemoveTask.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if ((table.getItemCount() != 0) && (table.getSelectionIndex() >= 0)) {
-					table.remove(table.getSelectionIndex());
+				if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelectionIndex() >= 0)) {
+					tabExercises.remove(tabExercises.getSelectionIndex());
 					
 					// update the buttons
 					setButtonsEnables();
@@ -247,8 +248,8 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		btnMoveDown.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if ((table.getItemCount() != 0) && (table.getSelection() != null) && (table.getSelectionIndex() != table.getItemCount())) {
-					int selectedItem = table.getSelectionIndex();
+				if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelection() != null) && (tabExercises.getSelectionIndex() != tabExercises.getItemCount())) {
+					int selectedItem = tabExercises.getSelectionIndex();
 					moveTableItem(selectedItem, "downwards");
 				}
 				
@@ -257,15 +258,15 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		btnMoveDown.setText(ARROW_DOWNWARDS);
 		new Label(shell, SWT.NONE);
 		new Label(shell, SWT.NONE);
-		btnExcelErstellen = new Button(shell, SWT.NONE);
-		btnExcelErstellen.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
-		btnExcelErstellen.addSelectionListener(new SelectionAdapter() {
+		btnCreateExcel = new Button(shell, SWT.NONE);
+		btnCreateExcel.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
+		btnCreateExcel.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				createExcelFile();				
 			}
 		});
-		btnExcelErstellen.setText("Excel erstellen");
+		btnCreateExcel.setText("Excel erstellen");
 
 		logwindow = new Label(shell, SWT.NONE);
 		logwindow.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
@@ -290,7 +291,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	private void setButtonsEnables() {
 		
 		// buttons for moving items up and down
-		if (table.getItemCount() >= 2) {
+		if (tabExercises.getItemCount() >= 2) {
 			btnMoveUp.setEnabled(true);
 			btnMoveDown.setEnabled(true);
 		} else {
@@ -298,7 +299,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			btnMoveDown.setEnabled(false);
 		}
 		
-		if (table.getItemCount() == 0) {
+		if (tabExercises.getItemCount() == 0) {
 			btnRemoveTask.setEnabled(false);
 		} else {
 			btnRemoveTask.setEnabled(true);
@@ -368,8 +369,8 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		List<ExerciseInterface> exerciseList = new ArrayList<>();
 		
 		String bezeichnung, text;
-		for (int i = 0; i < table.getItemCount(); i++) {
-			TableItem ti = table.getItem(i);
+		for (int i = 0; i < tabExercises.getItemCount(); i++) {
+			TableItem ti = tabExercises.getItem(i);
 			bezeichnung = ti.getText(1);
 			text = ti.getText(2);
 			switch (ti.getText(0)) {
@@ -397,11 +398,11 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param task: object of interface Aufgabentyp
 	 */
 	public static void addTask(ExerciseInterface task) {
-		TableItem item = new TableItem(table, SWT.NONE);
+		TableItem item = new TableItem(tabExercises, SWT.NONE);
 		item.setText(0, task.getTypeShortName());
 		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
-		fitTableColumnsWidth(table);
+		fitTableColumnsWidth(tabExercises);
 	}
 	
 	/**
@@ -411,11 +412,11 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param tableIndex: index of the table item to be updated
 	 */
 	public static void updateTask(ExerciseInterface task, int tableIndex) {		
-		TableItem item = table.getItem(tableIndex);
+		TableItem item = tabExercises.getItem(tableIndex);
 		item.setText(0, task.getTypeShortName());
 		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
-		fitTableColumnsWidth(table);
+		fitTableColumnsWidth(tabExercises);
 	}
 
 	/**
@@ -435,16 +436,16 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 */
 	private void moveTableItem(int index, String direction) {
 		if (index >= 0 && (direction == "upwards" || direction == "downwards")) {
-			 TableItem ti = table.getItem(index);
+			 TableItem ti = tabExercises.getItem(index);
 			 String[] tiContent = {ti.getText(0), ti.getText(1), ti.getText(2)};
 			 ti.dispose();
 			 TableItem nti = null;
 			 
 			 
 			 if (direction == "upwards" && index > 0) {
-				 nti = new TableItem(table, SWT.NONE, index-1);	
+				 nti = new TableItem(tabExercises, SWT.NONE, index-1);	
 			 } else if (direction == "downwards") {
-				 nti = new TableItem(table, SWT.NONE, index+1);
+				 nti = new TableItem(tabExercises, SWT.NONE, index+1);
 			 }			 			 
 			 nti.setText(tiContent);		
 		}
