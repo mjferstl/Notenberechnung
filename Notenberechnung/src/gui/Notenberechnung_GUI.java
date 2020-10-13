@@ -24,6 +24,7 @@ import school.NormalExercise;
 import school.ExerciseInterface;
 import school.SchoolClass;
 import school.TextproductionExercise;
+import utils.LogFileManager;
 
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -34,7 +35,7 @@ import org.eclipse.swt.events.MouseEvent;
 
 public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher {
 	
-	public final static String VERSION = "0.2.3";
+	public final static String VERSION = "0.2.4";
 
 	// shell
 	protected Shell shell;
@@ -69,6 +70,8 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	// tables
 	private static Table tabExercises;
 	
+	private static LogFileManager logManager;
+	
 
 	/**
 	 * Launch the application.
@@ -76,13 +79,25 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		// Init the log manager
+		logManager = new LogFileManager();
+		logManager.writeLogMessage("Starting program (v" + VERSION + ")");
+		
+		// Try to start the program
 		try {
 			Notenberechnung_GUI window = new Notenberechnung_GUI();
+			logManager.writeLogMessage("Starting GUI");
 			window.open();
+			logManager.writeLogMessage("GUI closed");
 		} catch (Exception e) {
-			e.printStackTrace();
+			logManager.writeLogMessage("Error stopped program");
+			logManager.writeLogMessage(e.toString());
 		}
+		
+		// 
+		logManager.writeLogMessage("Program stopped");
 	}
+	
 
 	/**
 	 * Open the window.
@@ -271,19 +286,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		logwindow = new Label(shell, SWT.NONE);
 		logwindow.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 		logwindow.setText(" ");
-		logwindow.setBackground(transparentBackgroundColor);
-		
-//		Group logGroup = new Group(shell, SWT.NONE);
-//		logGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-//		logGroup.setLayout(new GridLayout(1, false));
-//		logGroup.setText("Log");
-//		
-//		Table logTable = new Table(logGroup, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
-//		logTable.setBackground(transparentBackgroundColor);
-//		GridData logTableGridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-//		logTableGridData.heightHint = 25;
-//		logTable.setLayoutData(logTableGridData);
-		
+		logwindow.setBackground(transparentBackgroundColor);		
 		
 		Label versionInfoLabel = new Label(shell, SWT.NONE);
 		versionInfoLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
@@ -378,6 +381,10 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		logwindow.setText(message);
 		logwindow.setForeground(color);
 		logwindow.requestLayout();
+		
+		if ((logManager != null) && (logManager instanceof LogFileManager)) {
+			logManager.writeLogMessage(message);
+		}
 	}
 
 
