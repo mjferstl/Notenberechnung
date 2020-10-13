@@ -33,6 +33,8 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 
 public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher {
+	
+	public final static String VERSION = "0.2.3";
 
 	// shell
 	protected Shell shell;
@@ -66,7 +68,6 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	
 	// tables
 	private static Table tabExercises;
-	private Group group;
 	
 
 	/**
@@ -148,8 +149,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 							schoolClass = new SchoolClass();
 							String filePath = fileDirectory + "\\" + fileName;
 							File selectedFile = new File(filePath);
-							Error error = new Error();
-							error = schoolClass.loadStudentsFromFile(selectedFile);
+							Error error = schoolClass.loadStudentsFromFile(selectedFile);
 
 							// update logwindow
 							if (error.getErrorId() == 0) {
@@ -200,7 +200,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			tabExercises.getColumn(i).pack();
 		}
 		
-		group = new Group(shell, SWT.NONE);
+		Group group = new Group(shell, SWT.NONE);
 		group.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 2));
 		btnMoveUp = new Button(group, SWT.NONE);
 		btnMoveUp.setBounds(3, 47, 50, 25);
@@ -272,6 +272,23 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		logwindow.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 		logwindow.setText(" ");
 		logwindow.setBackground(transparentBackgroundColor);
+		
+//		Group logGroup = new Group(shell, SWT.NONE);
+//		logGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+//		logGroup.setLayout(new GridLayout(1, false));
+//		logGroup.setText("Log");
+//		
+//		Table logTable = new Table(logGroup, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL | SWT.H_SCROLL);
+//		logTable.setBackground(transparentBackgroundColor);
+//		GridData logTableGridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+//		logTableGridData.heightHint = 25;
+//		logTable.setLayoutData(logTableGridData);
+		
+		
+		Label versionInfoLabel = new Label(shell, SWT.NONE);
+		versionInfoLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
+		versionInfoLabel.setText("v" + VERSION);
+		versionInfoLabel.setBackground(transparentBackgroundColor);
 		
 		// set all buttons enabled/disabled depending on the current contents
 		setButtonsEnables();

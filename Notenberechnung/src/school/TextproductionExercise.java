@@ -3,8 +3,6 @@ package school;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import gui.Notenberechnung_GUI;
-
 public class TextproductionExercise implements ExerciseInterface {
 
 	private String name;

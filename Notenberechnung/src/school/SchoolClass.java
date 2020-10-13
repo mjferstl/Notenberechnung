@@ -52,7 +52,7 @@ public class SchoolClass {
 					String.format("Die Datei \"%s\" kann nicht gelesen werden", file.getAbsolutePath()));
 			return err;
 		} else {
-			return new Error();
+			return parseStudentsFile(file);
 		}
 	}
 
