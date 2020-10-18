@@ -166,10 +166,10 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 					Error error = schoolClass.loadStudentsFromFile(selectedFile);
 
 					// update logwindow
-					if (error.getErrorId() == 0) {
-						updateLogMessage(error.getErrorMsg(), IF_Log.LOG_SUCCESS);
+					if (error.getErrorLevel() == 0) {
+						updateLogMessage(error.getMessage(), IF_Log.LOG_SUCCESS);
 					} else {
-						updateLogMessage(error.getErrorMsg(), IF_Log.LOG_ERROR);
+						updateLogMessage(error.getMessage(), IF_Log.LOG_ERROR);
 					}
 				}
 			}

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import extras.Error;
 import utils.TextFileReader;
 
@@ -16,39 +18,128 @@ public class SchoolClass {
 	private String className;
 	private final Pattern studentNamePattern = Pattern.compile("(\\w+[^\\t]*)(,?\\t+)(\\w+[^\\t]*)");
 
+	/**
+	 * Constructor with no arguments. The name of the class is set to "Klasse"
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	public SchoolClass() {
-		this.className = "Klasse";
+		setClassName("Klasse");
 	}
 
-	public SchoolClass(String className) {
-		this.className = className;
+	/**
+	 * Constructor with the class name as argument.
+	 * 
+	 * @param className Name of the school class. E.g. Klasse 9b
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
+	public SchoolClass(@NonNull String className) {
+		setClassName(className);
 	}
 
+	/**
+	 * Constructor with the class name as argument.
+	 * 
+	 * @param className   Name of the school class. E.g. Klasse 9b
+	 * @param studentList list of students, which are in this school class
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
+	public SchoolClass(@NonNull String className, List<Student> studentList) {
+		setClassName(className);
+		setStudentList(studentList);
+	}
+
+	/**
+	 * Add a student to the list of students for this class
+	 * 
+	 * @param student Student to be added
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	public void addStudent(Student student) {
 		this.studentList.add(student);
 	}
 
-	public int getSize() {
-		return this.studentList.size();
+	/**
+	 * Add a list of students to the student list of this class
+	 * 
+	 * @param studentList list of student objects
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
+	public void addStudents(List<Student> studentList) {
+		for (Student student : studentList) {
+			addStudent(student);
+		}
 	}
 
+	/**
+	 * Get the number of students in the class
+	 * 
+	 * @return number of students
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
+	public int getSize() {
+		return getStudentList().size();
+	}
+
+	/**
+	 * Get a list containing all stundets of the school class
+	 * 
+	 * @return list of Student objects
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	public List<Student> getStudentList() {
 		return this.studentList;
 	}
 
+	/**
+	 * Check if the school class contains students. If no students are stored in
+	 * this school class, then it's empty.
+	 * 
+	 * @return boolean which indicates if the school class contains any students
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	public boolean isEmpty() {
-		if (getStudentList().size() == 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return getStudentList().isEmpty();
 	}
 
+	/**
+	 * Method to load a list of students from a file.
+	 * 
+	 * @param file File, which contains the student names
+	 * @return Error which contains information about the process
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	public Error loadStudentsFromFile(File file) {
 		if (file == null) {
 			throw new RuntimeException("Invalid argument null for File.");
 		} else if (!file.exists() || !file.canRead()) {
-			Error err = new Error(1000,
+			Error err = new Error(Error.ERROR,
 					String.format("Die Datei \"%s\" kann nicht gelesen werden", file.getAbsolutePath()));
 			return err;
 		} else {
@@ -56,6 +147,18 @@ public class SchoolClass {
 		}
 	}
 
+	/**
+	 * Method to parse the students from a file. The file needs to be a text file,
+	 * which contains the student names line-by-line in the form: firstname(s) \t
+	 * lastname(s)
+	 * 
+	 * @param file File (text file) which contains the student names line-by-line
+	 * @return Error, which contains information about the parsing process
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	private Error parseStudentsFile(File file) {
 		Error err = new Error();
 
@@ -75,9 +178,9 @@ public class SchoolClass {
 		List<String> fileContentList;
 		try {
 			fileContentList = new TextFileReader(file).readFile();
-		} catch (IOException e1) {
-			err.setErrorId(10);
-			err.setErrorMsg(String.format(
+		} catch (IOException e) {
+			err.setErrorLevel(Error.ERROR);
+			err.setMessage(String.format(
 					"Fehler beim Einlesen der Datei \"%s\". Trennzeichen zw. Vor -und Nachname müssen Tabs (und Kommas) sein.",
 					file.getAbsolutePath()));
 			return err;
@@ -94,8 +197,8 @@ public class SchoolClass {
 				Student student = new Student(lastname, firstname);
 				addStudent(student);
 			} else {
-				err.setErrorId(10);
-				err.setErrorMsg(String.format(
+				err.setErrorLevel(Error.ERROR);
+				err.setMessage(String.format(
 						"Fehler beim Auslesen des Namens aus \"%s\". Trennzeichen zw. Vor -und Nachname müssen Tabs (und Kommas) sein.",
 						line));
 				return err;
@@ -103,8 +206,8 @@ public class SchoolClass {
 		}
 
 		// No Error
-		err.setErrorId(0);
-		err.setErrorMsg("Klassenliste mit " + this.studentList.size() + " Schülernnamen erfolgreich eingelesen");
+		err.setErrorLevel(0);
+		err.setMessage("Klassenliste mit " + this.studentList.size() + " Schülernnamen erfolgreich eingelesen");
 		return err;
 	}
 
@@ -114,12 +217,46 @@ public class SchoolClass {
 
 	}
 
-	public void setClassName(String className) {
-		this.className = className;
+	/**
+	 * Method to set the name of the class. If the class name is null, then it will
+	 * be ignored.
+	 * 
+	 * @param className Name of the class to be set
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
+	public void setClassName(@NonNull String className) {
+		if (className != null) {
+			this.className = className;
+		}
 	}
 
+	/**
+	 * Method to get the class name
+	 * 
+	 * @return name of the class
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
 	public String getClassName() {
 		return this.className;
+	}
+
+	/**
+	 * Set the students list. The current student list will be overwritten.
+	 * 
+	 * @param studentList list of Student objets
+	 * 
+	 * @author Mathias Ferstl
+	 * @date 18.10.2020
+	 * @version 1.0
+	 */
+	public void setStudentList(List<Student> studentList) {
+		this.studentList = studentList;
 	}
 
 }
