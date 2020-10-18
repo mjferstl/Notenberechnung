@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="C:/Users/Mathias/Downloads/poi-bin-4.1.0-20190412/poi-4.1.0/lib/commons-compress-1.18.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Mathias/Downloads/poi-bin-4.1.0-20190412/poi-4.1.0/poi-ooxml-schemas-4.1.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Mathias/Downloads/poi-bin-4.1.0-20190412/poi-4.1.0/lib/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="org.eclipse.jdt.annotation_2.2.200.v20180921-1416.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
