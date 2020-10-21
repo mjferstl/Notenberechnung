@@ -63,15 +63,18 @@ public class ExerciseDialog extends Dialog {
 	private Text tbTaskName;
 	private Label sepHoriz;
 	private GridData buttonGridData;
+	
+	private Notenberechnung_GUI par;
 
 	/**
 	 * InputDialog constructor
 	 * 
 	 * @param parent: the parent
 	 */
-	public ExerciseDialog(Shell parent) {
+	public ExerciseDialog(Notenberechnung_GUI par, Shell parent) {
 		// Pass the default styles here
 		this(parent, SWT.TITLE | SWT.APPLICATION_MODAL);
+		this.par = par;
 	}
 
 	/**
@@ -267,9 +270,9 @@ public class ExerciseDialog extends Dialog {
 						
 							NormalExercise a = new NormalExercise(bezeichnung, be, gewichtung);
 							if (loadTask) {
-								Notenberechnung_GUI.updateTask(a, tableIndex);
+								par.updateTask(a, tableIndex);
 							} else {
-								Notenberechnung_GUI.addTask(a);
+								par.addTask(a);
 							}
 							shell.close();
 						
@@ -290,9 +293,9 @@ public class ExerciseDialog extends Dialog {
 					if (inhalt != errorId && sprache != errorId && gewichtung != errorId) {
 						TextproductionExercise tp = new TextproductionExercise(bezeichnung, inhalt, sprache, gewichtung);
 						if (loadTask) {
-							Notenberechnung_GUI.updateTask(tp, tableIndex);
+							par.updateTask(tp, tableIndex);
 						} else {
-							Notenberechnung_GUI.addTask(tp);
+							par.addTask(tp);
 						}
 						shell.close();
 					}

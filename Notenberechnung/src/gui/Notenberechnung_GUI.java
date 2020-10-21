@@ -35,7 +35,7 @@ import org.eclipse.swt.events.MouseEvent;
 
 public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher {
 
-	public final static String VERSION = "0.2.4";
+	public final static String VERSION = "0.3.0";
 
 	// shell
 	protected Shell shell;
@@ -51,7 +51,6 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	private final String[] titles = { "", "Bezeichnung", "Bewertung" };
 
 	// labels
-	private static Label logwindow;
 	private Label lblSchoolClassFile;
 	private Label lblSchoolClassList;
 	private Label lblExercises;
@@ -66,6 +65,8 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 
 	// custom objects
 	private SchoolClass schoolClass;
+	
+	private Log log;
 
 	// tables
 	private static Table tabExercises;
@@ -89,6 +90,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			window.open();
 			logManager.writeLogMessage("GUI closed");
 		} catch (Exception e) {
+			System.out.println(e.toString());
 			logManager.writeLogMessage("Error stopped program");
 			logManager.writeLogMessage(e.toString());
 		}
@@ -116,10 +118,12 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * Create contents of the window.
 	 */
 	protected void createContents() {
+		
+		Notenberechnung_GUI par = this;
 
 		shell = new Shell();
 		shell.setImage(SWTResourceManager.getImage(Notenberechnung_GUI.class, "/gui/icon.png"));
-		shell.setSize(600, 250);
+		shell.setSize(600, 400);
 		shell.setText("Erstellen einer Excel-Datei zur Notenauswertung");
 		shell.setLayout(new GridLayout(3, false));
 		shell.setBackground(
@@ -237,7 +241,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			public void widgetSelected(SelectionEvent e) {
 
 				// open a new dialog for creating a task
-				ExerciseDialog na = new ExerciseDialog(shell);
+				ExerciseDialog na = new ExerciseDialog(par, shell);
 				na.open();
 
 				// update the buttons
@@ -284,12 +288,11 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			}
 		});
 		btnCreateExcel.setText("Excel erstellen");
-
-		logwindow = new Label(shell, SWT.NONE);
-		logwindow.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
-		logwindow.setText(" ");
-		logwindow.setBackground(transparentBackgroundColor);
-
+		
+		log = new Log(shell);
+		log.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		log.setBackground(transparentBackgroundColor);
+		
 		Label versionInfoLabel = new Label(shell, SWT.NONE);
 		versionInfoLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
 		versionInfoLabel.setText("v" + VERSION);
@@ -412,9 +415,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	private void updateLogMessage(String message, Color color) {
 		
 		// change the text of the log message label
-		logwindow.setText(message);
-		logwindow.setForeground(color);
-		logwindow.requestLayout();
+		log.addLogMessage(message);
 
 		// Optionally: write the message to the log file
 		if ((logManager != null) && (logManager instanceof LogFileManager)) {
@@ -469,7 +470,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @date 13.10.2020
 	 * @version 1.0
 	 */
-	public static void addTask(ExerciseInterface task) {
+	public void addTask(ExerciseInterface task) {
 		TableItem item = new TableItem(tabExercises, SWT.NONE);
 		item.setText(0, task.getTypeShortName());
 		item.setText(1, task.getName());
@@ -487,7 +488,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @date 13.10.2020
 	 * @version 1.0
 	 */
-	public static void updateTask(ExerciseInterface task, int tableIndex) {
+	public void updateTask(ExerciseInterface task, int tableIndex) {
 		TableItem item = tabExercises.getItem(tableIndex);
 		item.setText(0, task.getTypeShortName());
 		item.setText(1, task.getName());
@@ -502,7 +503,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @date 13.10.2020
 	 * @version 1.0
 	 */
-	private static void fitTableColumnsWidth(Table t) {
+	private void fitTableColumnsWidth(Table t) {
 		for (int i = 0, n = t.getColumnCount(); i < n; i++) {
 			t.getColumn(i).pack();
 		}
