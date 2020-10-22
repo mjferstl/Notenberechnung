@@ -188,7 +188,9 @@ public class SchoolClass {
 
 		// Parse student names
 		String firstname, lastname;
+		int counter = 0;
 		for (String line : fileContentList) {
+			counter++;
 			Matcher m = studentNamePattern.matcher(line);
 			if (m.find()) {
 				firstname = m.group(1).trim();
@@ -199,8 +201,8 @@ public class SchoolClass {
 			} else {
 				err.setErrorLevel(Error.ERROR);
 				err.setMessage(String.format(
-						"Fehler beim Auslesen des Namens aus \"%s\". Trennzeichen zw. Vor -und Nachname müssen Tabs (und Kommas) sein.",
-						line));
+						"Fehler beim Auslesen des Namens in Zeile %d: \"%s\". Trennzeichen zw. Vor -und Nachname müssen Tabs (und Kommas) sein.",
+						counter, line));
 				return err;
 			}
 		}

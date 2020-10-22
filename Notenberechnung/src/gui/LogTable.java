@@ -34,11 +34,16 @@ public class LogTable extends Table {
 	}
 	
 	public void addLogMessage(String logMessage, int logLevel) {
+		this.addLogMessage(logMessage, getLogColor(logLevel));
+	}
+	
+	public void addLogMessage(String logMessage, Color color) {
 		TableItem item = new TableItem(this, SWT.NONE);
 		item.setText(0, getLogTime());
 		item.setText(1, logMessage); 
-		item.setForeground(getLogColor(logLevel));
-		fitTableColumnsWidth(this);
+		item.setForeground(color);
+		fitTableColumnsWidth();
+		this.setTopIndex(this.getItemCount()-2);
 	}
 	
 	private Color getLogColor(int logLevel) {
@@ -66,9 +71,9 @@ public class LogTable extends Table {
 		return logDateFormat.format(new Date());
 	}
 	
-	private void fitTableColumnsWidth(Table table) {
-		for (int i = 0, n = table.getColumnCount(); i < n; i++) {
-			table.getColumn(i).pack();
+	private void fitTableColumnsWidth() {
+		for (int i = 0, n = this.getColumnCount(); i < n; i++) {
+			this.getColumn(i).pack();
 		}
 	}
 

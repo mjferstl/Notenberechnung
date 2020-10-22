@@ -1,6 +1,7 @@
 package gui;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -37,6 +38,12 @@ public class Log extends Group {
 	public void addLogMessage(String logMessage, int logLevel) {
 		if (this.logTable != null) {
 			logTable.addLogMessage(logMessage, logLevel);
+		}
+	}
+	
+	public void addLogMessage(String logMessage, Color color) {
+		if (this.logTable != null) {
+			logTable.addLogMessage(logMessage, color);
 		}
 	}
 	
