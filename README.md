@@ -5,10 +5,10 @@ Mithilfe dieses kostenlosen Programms können Sie ganz einfach eine Vorlage zur 
 Sie benötigen dafür nur die Klassenliste als .txt-Datei auf ihrem Rechner.
 Ein Beispiel für eine Klassenliste finden Sie weiter unten.
 
-Benutzeroberfläche
+Benutzeroberfläche<br>
 <img src="Notenberechnung/images/GUI_v0.3.0.png" width="500" />
 
-Erstelle Vorlage in MS Excel
+Erstelle Vorlage in MS Excel<br>
 <img src="Notenberechnung/images/Excel_v0.3.0.png" width="700" />
 
 Beispiel für eine Klassenliste in der Datei DemoKlasse.txt.
