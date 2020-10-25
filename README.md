@@ -1,4 +1,4 @@
-# Notenberechnung_Java
+# Notenberechnung
 
 ## Deutsch
 Mithilfe dieses kostenlosen Programms können Sie ganz einfach eine Vorlage zur Auswertung einer Schulaufgabe oder Stegreifaufgabe erstellen.
