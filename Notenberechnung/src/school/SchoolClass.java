@@ -16,7 +16,7 @@ public class SchoolClass {
 
 	private List<Student> studentList = new ArrayList<Student>();
 	private String className;
-	private final Pattern studentNamePattern = Pattern.compile("(\\w+[^\\t]*)(,?\\t+)(\\w+[^\\t]*)");
+	private final Pattern studentNamePattern = Pattern.compile("(\\w+[^\\t]*)(,|\\t)+(\\w+[^\\t]*)");
 
 	/**
 	 * Constructor with no arguments. The name of the class is set to "Klasse"
@@ -180,9 +180,9 @@ public class SchoolClass {
 			fileContentList = new TextFileReader(file).readFile();
 		} catch (IOException e) {
 			err.setErrorLevel(Error.ERROR);
-			err.setMessage(String.format(
-					"Fehler beim Einlesen der Datei \"%s\". Trennzeichen zw. Vor -und Nachname müssen Tabs (und Kommas) sein.",
-					file.getAbsolutePath()));
+			err.setMessage(
+					String.format("Fehler beim Einlesen der Datei \"%s\".\nDie Datei ist möglicherweise nicht lesbar.",
+							file.getAbsolutePath()));
 			return err;
 		}
 
@@ -200,9 +200,10 @@ public class SchoolClass {
 				addStudent(student);
 			} else {
 				err.setErrorLevel(Error.ERROR);
-				err.setMessage(String.format(
-						"Fehler beim Auslesen des Namens in Zeile %d: \"%s\". Trennzeichen zw. Vor -und Nachname müssen Tabs (und Kommas) sein.",
-						counter, line));
+				String errorMessage = String.format(
+						"Fehler beim Auslesen des Namens in Zeile %d: \"%s\".\nAls Trennzeichen zw. Vor -und Nachname bitte Tabs und/oder Kommas verwenden.",
+						counter, line);
+				err.setMessage(errorMessage);
 				return err;
 			}
 		}

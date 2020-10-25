@@ -1,4 +1,4 @@
-package gui;
+package log;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -7,12 +7,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 
-public class Log extends Group {
+public class SWTLog extends Group {
 	
 	private final int numColumns = 1;
 	private LogTable logTable;
 
-	public Log(Composite parent) {
+	public SWTLog(Composite parent) {
 		super(parent, SWT.NONE);
 		this.setText("Log");
 		
@@ -29,20 +29,8 @@ public class Log extends Group {
 		logTable.setLayoutData(logTableGridData);
 	}
 	
-	public void addLogMessage(String logMessage) {
-		if (this.logTable != null) {
-			logTable.addLogMessage(logMessage, IF_Log.LOG_INFO);
-		}
-	}
-	
-	public void addLogMessage(String logMessage, int logLevel) {
-		if (this.logTable != null) {
-			logTable.addLogMessage(logMessage, logLevel);
-		}
-	}
-	
 	public void addLogMessage(String logMessage, Color color) {
-		if (this.logTable != null) {
+		if (this.logTable != null && !this.logTable.isDisposed()) {
 			logTable.addLogMessage(logMessage, color);
 		}
 	}

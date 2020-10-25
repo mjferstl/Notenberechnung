@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import log.IF_Log;
 import school.NormalExercise;
 import school.ExerciseInterface;
 import school.TextproductionExercise;

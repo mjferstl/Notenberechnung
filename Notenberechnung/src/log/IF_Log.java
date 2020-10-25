@@ -1,4 +1,4 @@
-package gui;
+package log;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;

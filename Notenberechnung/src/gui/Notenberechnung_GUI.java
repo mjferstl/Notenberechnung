@@ -5,11 +5,11 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
-
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -20,11 +20,13 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import excel.ExcelWorkbookCreator;
 import extras.Error;
+import log.IF_Log;
+import log.Log;
 import school.NormalExercise;
 import school.ExerciseInterface;
 import school.SchoolClass;
 import school.TextproductionExercise;
-import utils.LogFileManager;
+import utils.UpdatePublisher;
 
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
@@ -33,7 +35,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 
-public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher {
+public class Notenberechnung_GUI implements UpdatePublisher {
 
 	public final static String VERSION = "0.3.0";
 
@@ -54,16 +56,15 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	private Button btnRemoveTask;
 	private Button btnMoveUp;
 	private Button btnMoveDown;
+	private OpenFileButton btnOpenExcel;
 
 	// custom objects
 	private SchoolClass schoolClass;
 
-	private Log log;
+	private static Log log;
 
 	// tables
 	private static Table tabExercises;
-
-	private static LogFileManager logManager;
 
 	/**
 	 * Launch the application.
@@ -71,24 +72,26 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// Init the log manager
-		logManager = new LogFileManager();
-		logManager.writeLogMessage("Starting program (v" + VERSION + ")");
+		log = new Log();
+		log.addMessage("Starting program (v" + VERSION + ")");
 
 		// Try to start the program
 		try {
 			Notenberechnung_GUI window = new Notenberechnung_GUI();
-			logManager.writeLogMessage("Starting GUI");
+			log.addMessage("Starting GUI");
 			window.open();
-			logManager.writeLogMessage("GUI closed");
+			log.addMessage("GUI closed");
 		} catch (Exception e) {
 			System.out.println(e.toString());
-			logManager.writeLogMessage("Error stopped program");
-			logManager.writeLogMessage(e.toString());
+			log.addMessage("Error stopped program");
+			
+			StringWriter error = new StringWriter();
+			e.printStackTrace(new PrintWriter(error));
+			log.addMessage(error.toString());
 		}
 
 		//
-		logManager.writeLogMessage("Program stopped");
+		log.addMessage("Program stopped");
 	}
 
 	/**
@@ -222,7 +225,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 				if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelection() != null)
 						&& (tabExercises.getSelectionIndex() != 0)) {
 					int selectedItem = tabExercises.getSelectionIndex();
-					moveTableItem(selectedItem, "upwards");
+					moveExercise(selectedItem, "upwards");
 				}
 			}
 		});
@@ -256,7 +259,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 				if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelection() != null)
 						&& (tabExercises.getSelectionIndex() != tabExercises.getItemCount())) {
 					int selectedItem = tabExercises.getSelectionIndex();
-					moveTableItem(selectedItem, "downwards");
+					moveExercise(selectedItem, "downwards");
 				}
 			}
 		});
@@ -264,6 +267,7 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 
 		new Label(shell, SWT.NONE);
 		new Label(shell, SWT.NONE);
+		
 		Button btnCreateExcel = new Button(shell, SWT.NONE);
 		btnCreateExcel.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
 		btnCreateExcel.addSelectionListener(new SelectionAdapter() {
@@ -273,10 +277,19 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			}
 		});
 		btnCreateExcel.setText("Excel erstellen");
+		
+		Label space = new Label(shell, SWT.FILL);
+		space.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		space.setBackground(transparentBackgroundColor);
+		
+		btnOpenExcel = new OpenFileButton(this, shell, SWT.NONE);
+		btnOpenExcel.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
+		btnOpenExcel.setText("Excel öffnen");
+		btnOpenExcel.deactivate();
 
-		log = new Log(shell);
-		log.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
-		log.setBackground(transparentBackgroundColor);
+		log.createSwtLog(shell);
+		log.getSwtLog().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1));
+		log.getSwtLog().setBackground(transparentBackgroundColor);
 
 		Label versionInfoLabel = new Label(shell, SWT.NONE);
 		versionInfoLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
@@ -296,12 +309,21 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @version 1.0
 	 */
 	private void createExcelFile() {
+		
+		btnOpenExcel.deactivate();
+		
 		addLogMessage("Excel-Datei wird erstellt...", IF_Log.LOG_INFO);
 		List<ExerciseInterface> exercises = parseExercisesFromGUI();
 		ExcelWorkbookCreator creator = new ExcelWorkbookCreator(this, schoolClass, exercises);
-		creator.createXlsxFile();
+		File excelFile = creator.createXlsxFile();
+		
+		if (excelFile != null && excelFile.exists()) {
+			btnOpenExcel.activate(excelFile);
+		} else {
+			btnOpenExcel.deactivate();
+		}
 	}
-
+	
 	private void openNewExerciseDialog(Notenberechnung_GUI par) {
 		// open a new dialog for creating a task
 		ExerciseDialog na = new ExerciseDialog(par, shell);
@@ -336,85 +358,13 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			btnRemoveTask.setEnabled(true);
 		}
 	}
-
-	/**
-	 * Update the label called "logwindow". Text color is set to black
-	 * 
-	 * @param text: text to be set in the logwindow label
-	 * 
-	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
-	 */
-	public void updateLogMessage(String text) {
-		addLogMessage(text, IF_Log.LOG_INFO);
+	
+	public void addLogMessage(String message) {
+		log.addMessage(message);
 	}
 
-	/**
-	 * Deprecated Update the label called "logwindow" and set a specific text color
-	 * 
-	 * @param text:  text to be set in the logwindow label
-	 * @param color: string containing the text color. possible colors: blue, red,
-	 *               green, black
-	 */
-	@Deprecated
-	public void updateLogMessage(String text, String color) {
-		switch (color) {
-		case "blue":
-			addLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_BLUE));
-			break;
-		case "red":
-			addLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_RED));
-			break;
-		case "green":
-			addLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
-			break;
-		default:
-			addLogMessage(text, SWTResourceManager.getColor(SWT.COLOR_BLACK));
-		}
-	}
-
-	public void addLogMessage(String message, int logLevel) {
-		Color logColor;
-
-		switch (logLevel) {
-		case IF_Log.LOG_ERROR:
-			logColor = IF_Log.RED;
-			break;
-		case IF_Log.LOG_SUCCESS:
-			logColor = IF_Log.GREEN;
-			break;
-		case IF_Log.LOG_INFO:
-			logColor = IF_Log.BLACK;
-			break;
-		default:
-			logColor = IF_Log.BLACK;
-		}
-		addLogMessage(message, logColor);
-	}
-
-	/**
-	 * Method to update the message in the GUI's log label and write the log message
-	 * to the log file. The color of the text, which is displayed in the GUI, can be
-	 * specified.
-	 * 
-	 * @param message String to be set as text for the log message label. This
-	 *                String will also be written to the log file
-	 * @param color   Color to be used for the text in the log message label
-	 * 
-	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
-	 */
-	public void addLogMessage(String message, Color color) {
-
-		// change the text of the log message label
-		log.addLogMessage(message, color);
-
-		// Optionally: write the message to the log file
-		if ((logManager != null) && (logManager instanceof LogFileManager)) {
-			logManager.writeLogMessage(message);
-		}
+	public void addLogMessage(String message, int logLevel) {		
+		log.addMessage(message, logLevel);
 	}
 
 	/**
@@ -471,8 +421,8 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param task: object of interface ExerciseInterface
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 22.10.2020
-	 * @version 1.1
+	 * @date 25.10.2020
+	 * @version 1.2
 	 */
 	public void addTask(ExerciseInterface task) {
 		TableItem item = new TableItem(tabExercises, SWT.NONE);
@@ -480,8 +430,10 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(tabExercises);
+		
+		btnOpenExcel.deactivate();
 
-		addLogMessage(String.format("Aufagbe \"%s\" erstellt.", task.getName()), IF_Log.LOG_INFO);
+		addLogMessage(String.format("Aufgabe \"%s\" erstellt.", task.getName()));
 	}
 
 	/**
@@ -491,8 +443,8 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param tableIndex: index of the table item, which should be updated
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 22.10.2020
-	 * @version 1.1
+	 * @date 25.10.2020
+	 * @version 1.2
 	 */
 	public void updateTask(ExerciseInterface task, int tableIndex) {
 		TableItem item = tabExercises.getItem(tableIndex);
@@ -500,8 +452,10 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 		item.setText(1, task.getName());
 		item.setText(2, task.getConfig());
 		fitTableColumnsWidth(tabExercises);
+		
+		btnOpenExcel.deactivate();
 
-		addLogMessage(String.format("Aufagbe \"%s\" aktualisiert", task.getName()), IF_Log.LOG_INFO);
+		addLogMessage(String.format("Aufgabe \"%s\" aktualisiert", task.getName()), IF_Log.LOG_INFO);
 	}
 
 	/**
@@ -521,11 +475,13 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 			
 			table.remove(index);
 			
-			addLogMessage(String.format("Aufagbe \"%s\" gelöscht", exercise.getName()), IF_Log.LOG_INFO);
+			addLogMessage(String.format("Aufgabe \"%s\" gelöscht", exercise.getName()), IF_Log.LOG_INFO);
 
 			// update the buttons
 			setButtonsEnables();
 		}
+		
+		btnOpenExcel.deactivate();
 	}
 
 	/**
@@ -549,10 +505,10 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 	 * @param direction: String containing "upwards" or "downwards"
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
+	 * @date 25.10.2020
+	 * @version 1.1
 	 */
-	private void moveTableItem(int index, String direction) {
+	private void moveExercise(int index, String direction) {
 		if (index >= 0 && (direction == "upwards" || direction == "downwards")) {
 			TableItem tableItem = tabExercises.getItem(index);
 			String[] tableItemContent = { tableItem.getText(0), tableItem.getText(1), tableItem.getText(2) };
@@ -565,13 +521,20 @@ public class Notenberechnung_GUI implements ExcelWorkbookCreator.UpdatePublisher
 				newTableItem = new TableItem(tabExercises, SWT.NONE, index + 1);
 			} else {
 				newTableItem = null;
+				return;
 			}
 			newTableItem.setText(tableItemContent);
+			
+			ExerciseInterface exercise = parseTableItemToExercise(newTableItem);
+			String logMessage = String.format("Aufgabe \"%s\" verschoben", exercise.getName());
+			log.addMessage(logMessage);
+			
+			btnOpenExcel.deactivate();
 		}
 	}
 
 	@Override
-	public void printUpdate(String message, int logLevel) {
+	public void publishUpdate(String message, int logLevel) {
 		addLogMessage(message, logLevel);
 	}
 

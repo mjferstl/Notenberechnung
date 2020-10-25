@@ -2,6 +2,7 @@ package excel;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,15 +23,15 @@ import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
 import extras.Chart;
 import extras.ExcelSheetFunctions;
-import gui.IF_Log;
+import log.IF_Log;
 import school.ExerciseInterface;
 import school.NormalExercise;
 import school.SchoolClass;
 import school.Student;
 import school.TextproductionExercise;
+import utils.UpdatePublisher;
 
 public class ExcelWorkbookCreator {
 
@@ -48,20 +49,6 @@ public class ExcelWorkbookCreator {
 
 	private UpdatePublisher parent;
 
-	/**
-	 * Interface providing methods to publish information to the calling object.
-	 * Methods: printUpdate
-	 * 
-	 * @author Mathias
-	 * @date 04.10.2020
-	 * @version 1.0
-	 */
-	public interface UpdatePublisher {
-		void printUpdate(String message, int logLevel);
-
-		Shell getShell();
-	}
-
 	public ExcelWorkbookCreator(UpdatePublisher parent, SchoolClass schoolClass, List<ExerciseInterface> exercises) {
 		setSchoolClass(schoolClass);
 		setExerciseList(exercises);
@@ -70,7 +57,7 @@ public class ExcelWorkbookCreator {
 			this.parent = parent;
 		} else {
 			throw new RuntimeException(
-					"The class " + parent.toString() + " needs to implement ExcelWorkbookCreator.UpdatePublisher");
+					"The class " + parent.toString() + " needs to implement UpdatePublisher");
 		}
 	}
 
@@ -93,7 +80,9 @@ public class ExcelWorkbookCreator {
 	/**
 	 * Create the Excel-file
 	 */
-	public void createXlsxFile() {
+	public File createXlsxFile() {
+		
+		File xlsxFile = null;
 
 		if (getSchoolClass() == null || getSchoolClass().isEmpty()) {
 			printLogMessage("Keine Klassenliste ausgewählt...", IF_Log.LOG_ERROR);
@@ -144,8 +133,10 @@ public class ExcelWorkbookCreator {
 			}
 
 			// Select a filename to save the file
-			saveWorkbook(workbook);
+			xlsxFile = saveWorkbook(workbook);
 		}
+		
+		return xlsxFile;
 	}
 
 	private void printSchoolClass(Sheet sheet, int startRow, int startColumn) {
@@ -201,7 +192,7 @@ public class ExcelWorkbookCreator {
 				switch (exercise.getType()) {
 				case ExerciseInterface.TYPE_NORMAL_EXERCISE:
 					returnValue = ExcelExercisePrinter.printNormalExercise(sheet, (NormalExercise) exercise, startRow,
-							startColumn, numRows);
+							column, numRows);
 					column += ExcelExercisePrinter.COLUMN_RANGE_NORMAL_EXERCISE;
 					break;
 				case ExerciseInterface.TYPE_TEXTPRODUCTION_EXERCISE:
@@ -462,7 +453,7 @@ public class ExcelWorkbookCreator {
 	 * 
 	 * @param workbook: object of type Workbook
 	 */
-	private void saveWorkbook(Workbook workbook) {
+	private File saveWorkbook(Workbook workbook) {
 		FileDialog fsd = new FileDialog(parent.getShell(), SWT.SAVE);
 		fsd.setText("Speichern unter...");
 		String[] filterExt = { "*.xlsx" };
@@ -470,6 +461,8 @@ public class ExcelWorkbookCreator {
 		fsd.setOverwrite(true);
 		fsd.setFileName(getSchoolClass().getClassName());
 		String selected = fsd.open();
+		
+		File excelFile = null;
 
 		if (selected == null) {
 			printLogMessage("Keine Datei ausgewählt. Liste wurde nicht gespeichert.", IF_Log.LOG_ERROR);
@@ -482,6 +475,7 @@ public class ExcelWorkbookCreator {
 				workbook.close();
 				fileOut.close();
 				printLogMessage("Excel-Datei erfolgreich erstellt", IF_Log.LOG_SUCCESS);
+				excelFile = new File(selected);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 				printLogMessage("Die Datei konnte nicht erstellt werden", IF_Log.LOG_ERROR);
@@ -489,11 +483,13 @@ public class ExcelWorkbookCreator {
 				e.printStackTrace();
 			}
 		}
+		
+		return excelFile;
 	}
 
 	private void printLogMessage(String message, int logLevel) {
 		if (parent != null) {
-			parent.printUpdate(message, logLevel);
+			parent.publishUpdate(message, logLevel);
 		} else {
 			throw new RuntimeException("The variable \"parent\" has not been initialized.");
 		}

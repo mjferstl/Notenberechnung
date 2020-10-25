@@ -1,4 +1,4 @@
-package gui;
+package log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,43 +29,19 @@ public class LogTable extends Table {
 		}
 	}
 	
-	public void addLogMessage(String logMessage) {
-		this.addLogMessage(logMessage, IF_Log.LOG_INFO);
-	}
-	
-	public void addLogMessage(String logMessage, int logLevel) {
-		this.addLogMessage(logMessage, getLogColor(logLevel));
-	}
-	
 	public void addLogMessage(String logMessage, Color color) {
-		TableItem item = new TableItem(this, SWT.NONE);
-		item.setText(0, getLogTime());
-		item.setText(1, logMessage); 
-		item.setForeground(color);
+		String[] logMessageLines = logMessage.split("\n");
+		
+		for (int i=0; i<logMessageLines.length; i++) {
+			TableItem item = new TableItem(this, SWT.NONE);
+			item.setText(0, getLogTime());
+			item.setText(1, logMessageLines[i]); 
+			item.setForeground(color);
+		}
+		
 		fitTableColumnsWidth();
 		this.setTopIndex(this.getItemCount()-2);
 	}
-	
-	private Color getLogColor(int logLevel) {
-		
-		Color logColor;
-		
-		switch (logLevel) {
-		case IF_Log.LOG_ERROR:
-			logColor = IF_Log.RED;
-			break;
-		case IF_Log.LOG_SUCCESS:
-			logColor = IF_Log.GREEN;
-			break;
-		case IF_Log.LOG_INFO:
-			logColor = IF_Log.BLACK;
-			break;
-		default:
-			logColor = IF_Log.BLACK;
-		}
-		
-		return logColor;
-	} 
 	
 	private String getLogTime() {
 		return logDateFormat.format(new Date());
