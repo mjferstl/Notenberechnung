@@ -37,7 +37,7 @@ import org.eclipse.swt.events.MouseEvent;
 
 public class Notenberechnung_GUI implements UpdatePublisher {
 
-	public final static String VERSION = "0.3.0";
+	public final static String VERSION = "0.3.1";
 
 	// shell
 	protected Shell shell;
@@ -140,14 +140,14 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(shell, SWT.OPEN);
-				fd.setText("Klassenliste ausw‰hlen...");
+				fd.setText("Klassenliste ausw√§hlen...");
 				String[] filterExt = { "*.txt", "*.*" };
 				fd.setFilterExtensions(filterExt);
 				String selected = fd.open();
 
 				if (selected == null) {
-					addLogMessage("Keine Datei ausgw‰hlt", IF_Log.LOG_ERROR);
-					lblSchoolClassFile.setText("Keine Datei ausgw‰hlt");
+					addLogMessage("Keine Datei ausgw√§hlt", IF_Log.LOG_ERROR);
+					lblSchoolClassFile.setText("Keine Datei ausgw√§hlt");
 					lblSchoolClassFile.requestLayout();
 				} else {
 
@@ -157,7 +157,7 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 					lblSchoolClassFile.setText(fileName);
 					lblSchoolClassFile.requestLayout();
 
-					addLogMessage("Klassenliste ausgew‰hlt", IF_Log.LOG_INFO);
+					addLogMessage("Klassenliste ausgew√§hlt", IF_Log.LOG_INFO);
 
 					schoolClass = new SchoolClass();
 					String filePath = fileDirectory + "\\" + fileName;
@@ -284,7 +284,7 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 		
 		btnOpenExcel = new OpenFileButton(this, shell, SWT.NONE);
 		btnOpenExcel.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
-		btnOpenExcel.setText("Excel ˆffnen");
+		btnOpenExcel.setText("Excel √∂ffnen");
 		btnOpenExcel.deactivate();
 
 		log.createSwtLog(shell);
@@ -475,7 +475,7 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 			
 			table.remove(index);
 			
-			addLogMessage(String.format("Aufgabe \"%s\" gelˆscht", exercise.getName()), IF_Log.LOG_INFO);
+			addLogMessage(String.format("Aufgabe \"%s\" gel√∂scht", exercise.getName()), IF_Log.LOG_INFO);
 
 			// update the buttons
 			setButtonsEnables();
