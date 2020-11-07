@@ -21,9 +21,9 @@ import school.TextproductionExercise;
 
 public class ExerciseDialog extends Dialog {
 
-	private final int BACKGROUND_COLOR_RED = Notenberechnung_GUI.BACKGROUND_COLOR_RED;
-	private final int BACKGROUND_COLOR_GREEN = Notenberechnung_GUI.BACKGROUND_COLOR_GREEN;
-	private final int BACKGROUND_COLOR_BLUE = Notenberechnung_GUI.BACKGROUND_COLOR_BLUE;
+	private final int BACKGROUND_COLOR_RED = MainGUI.BACKGROUND_COLOR_RGB_RED;
+	private final int BACKGROUND_COLOR_GREEN = MainGUI.BACKGROUND_COLOR_RGB_GREEN;
+	private final int BACKGROUND_COLOR_BLUE = MainGUI.BACKGROUND_COLOR_RGB_BLUE;
 
 	// doubles
 	private double errorId = 999999;
@@ -61,17 +61,17 @@ public class ExerciseDialog extends Dialog {
 	private ExerciseInterface importedTask;
 	private Text tbTaskName;
 
-	private Notenberechnung_GUI mainGui;
+	private IF_GUI guiInterface;
 
 	/**
 	 * InputDialog constructor
 	 * 
 	 * @param parent: the parent
 	 */
-	public ExerciseDialog(Notenberechnung_GUI parentGui, Shell parent) {
+	public ExerciseDialog(IF_GUI parentGui, Shell parent) {
 		// Pass the default styles here
 		this(parentGui, parent, SWT.TITLE | SWT.APPLICATION_MODAL);
-		this.mainGui = parentGui;
+		this.guiInterface = parentGui;
 	}
 
 	/**
@@ -80,12 +80,12 @@ public class ExerciseDialog extends Dialog {
 	 * @param parent the parent
 	 * @param style  the style
 	 */
-	public ExerciseDialog(Notenberechnung_GUI par, Shell parent, int style) {
+	public ExerciseDialog(IF_GUI par, Shell parent, int style) {
 		// Let users override the default styles
 		super(parent, style);
 		setText("Aufgabe hinzufügen");
 		loadTask = false;
-		this.mainGui = par;
+		this.guiInterface = par;
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class ExerciseDialog extends Dialog {
 	 * @param parent the parent
 	 * @param style  the style
 	 */
-	public ExerciseDialog(Notenberechnung_GUI par, Shell parent, ExerciseInterface task, int index) {
+	public ExerciseDialog(IF_GUI par, Shell parent, ExerciseInterface task, int index) {
 		// Pass the default styles here
 		this(par, parent, SWT.DIALOG_TRIM);
 		setText("Aufgabe editieren");
@@ -262,9 +262,9 @@ public class ExerciseDialog extends Dialog {
 					if (be != errorId && gewichtung != errorId) {
 						NormalExercise a = new NormalExercise(bezeichnung, be, gewichtung);
 						if (loadTask) {
-							mainGui.updateTask(a, tableIndex);
+							guiInterface.updateTask(a, tableIndex);
 						} else {
-							mainGui.addTask(a);
+							guiInterface.addTask(a);
 						}
 						shell.close();
 
@@ -286,9 +286,9 @@ public class ExerciseDialog extends Dialog {
 						TextproductionExercise tp = new TextproductionExercise(bezeichnung, inhalt, sprache,
 								gewichtung);
 						if (loadTask) {
-							mainGui.updateTask(tp, tableIndex);
+							guiInterface.updateTask(tp, tableIndex);
 						} else {
-							mainGui.addTask(tp);
+							guiInterface.addTask(tp);
 						}
 						shell.close();
 					}
@@ -374,7 +374,7 @@ public class ExerciseDialog extends Dialog {
 	 * @param color: textcolor
 	 */
 	private void updateLogwindow(String text, String color) {
-		mainGui.addLogMessage(text, IF_Log.LOG_INFO);
+		this.guiInterface.addLogMessage(text, IF_Log.LOG_INFO);
 //		logwindow.setText(text);
 //		switch (color) {
 //		case "blue":
