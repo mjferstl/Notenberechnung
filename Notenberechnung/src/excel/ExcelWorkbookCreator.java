@@ -36,6 +36,9 @@ import utils.UpdatePublisher;
 public class ExcelWorkbookCreator {
 
 	private final int startRow = 4; // funefte Zeile
+	private final int NOT_SET = -1;
+	private int columnIndexGrades = NOT_SET;
+	private int rowIndexFirstGrade = NOT_SET;
 
 	private final String DIAMETER = "\u2300";
 
@@ -122,7 +125,7 @@ public class ExcelWorkbookCreator {
 			addGrading(sheet, startRow, columnIndex);
 
 			// Berechnung der GesamtNoten
-			addCalculationGrades(sheet, startRow, columnIndex);
+			addCalculationGrades(sheet, startRow+1, columnIndex);
 
 			// Diagramm hizufuegen
 			addGradingChart(sheet, startRow, columnIndex);
@@ -261,40 +264,55 @@ public class ExcelWorkbookCreator {
 	}
 
 	/**
-	 * add formulas for calculation the grades of all pupils
+	 * add formulas for the calculation of the students grades
 	 * 
 	 * @param sheet: excel sheet
+	 * @param startRow: 
 	 */
 	private void addCalculationGrades(Sheet sheet, int startRow, int startColumn) {
 
 		List<String> excelColumnNames = ExcelSheetFunctions.getExcelColumnNames();
 
-		String formulaNote, formulaPlus, formulaMinus, aktCell;
+		String formulaGrade, formulaPlus, formulaMinus, totalScoreCellName;
 
 		for (int i = 0; i < getSchoolClass().getSize(); i++) {
 
-			aktCell = excelColumnNames.get(totalPointsColumnIndex) + startRow + 1;
+			// Name of the cell, which contains the total score. E.g. "L41"
+			totalScoreCellName = excelColumnNames.get(totalPointsColumnIndex) + (startRow + i);
 
-			formulaNote = "IF(NOT(ISNUMBER(" + aktCell + ")),\"\",";
+			formulaGrade = "IF(NOT(ISNUMBER(" + totalScoreCellName + ")),\"\",";
 			// Ausgangsbasis fuer die + und - Berechnung
-			formulaPlus = formulaNote + "IF(OR(";
-			formulaMinus = formulaNote + "IF(OR(";
+			formulaPlus = formulaGrade + "IF(OR(";
+			formulaMinus = formulaGrade + "IF(OR(";
+			
+			// Loop over all grades
+			for (int j = 0; j < 6; j++) {
+				
+				// If the indices for the row and column of the grade cells (1,2,3,4,5,6) are set, then the cells are referenced.
+				// Otherwise the grades are printed hardcoded into the formula
+				if ((this.columnIndexGrades != NOT_SET) && (this.rowIndexFirstGrade != NOT_SET)) {
+					String columnNameGrades = excelColumnNames.get(this.columnIndexGrades);
 
-			for (int j = 1; j <= 6; j++) {
-				formulaNote = formulaNote + "IF(" + aktCell + ">=$" + excelColumnNames.get(notenBereicheEndeColumnIndex)
-						+ "$" + (startRow + j) + "," + j + ",";
-				formulaPlus = formulaPlus + aktCell + "=$" + excelColumnNames.get(notenBereicheEndeColumnIndex - 2)
+					formulaGrade = formulaGrade + "IF(" + totalScoreCellName + ">=$" + excelColumnNames.get(notenBereicheEndeColumnIndex)
+					+ "$" + (startRow + j) + ",$" + columnNameGrades + "$" + (this.rowIndexFirstGrade+j+1) + ",";
+				} else {
+					formulaGrade = formulaGrade + "IF(" + totalScoreCellName + ">=$" + excelColumnNames.get(notenBereicheEndeColumnIndex)
+					+ "$" + (startRow + j) + "," + (j+1) + ",";
+				}
+				
+				// Formulas for displaying a plus or minus sign
+				formulaPlus = formulaPlus + totalScoreCellName + "=$" + excelColumnNames.get(notenBereicheEndeColumnIndex - 2)
 						+ "$" + (startRow + j) + ",";
-				formulaMinus = formulaMinus + aktCell + "=$" + excelColumnNames.get(notenBereicheEndeColumnIndex) + "$"
+				formulaMinus = formulaMinus + totalScoreCellName + "=$" + excelColumnNames.get(notenBereicheEndeColumnIndex) + "$"
 						+ (startRow + j) + ",";
 			}
-			formulaNote = formulaNote + "\"\")))))))";
+			formulaGrade = formulaGrade + "\"\")))))))";
 			formulaPlus = formulaPlus.substring(0, formulaPlus.length() - 1) + "),\"+\",\"\"))";
 			formulaMinus = formulaMinus.substring(0, formulaMinus.length() - 1) + "),\"-\",\"\"))";
 
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i, totalNotenColumnindex, formulaNote);
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i, totalNotenColumnindex - 1, formulaPlus);
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i, totalNotenColumnindex + 1, formulaMinus);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i -1, totalNotenColumnindex, formulaGrade);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i -1, totalNotenColumnindex - 1, formulaPlus);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i -1, totalNotenColumnindex + 1, formulaMinus);
 		}
 
 		/*
@@ -320,17 +338,17 @@ public class ExcelWorkbookCreator {
 		clrFmt.getThresholds()[2].setValue(6d);
 
 		CellRangeAddress[] regions = {
-				CellRangeAddress.valueOf(excelColumnNames.get(totalNotenColumnindex) + (startRow + 1) + ":"
-						+ excelColumnNames.get(totalNotenColumnindex) + (startRow + getSchoolClass().getSize())) };
+				CellRangeAddress.valueOf(excelColumnNames.get(totalNotenColumnindex) + (startRow) + ":"
+						+ excelColumnNames.get(totalNotenColumnindex) + (startRow -1 + getSchoolClass().getSize())) };
 		sheetCF.addConditionalFormatting(regions, rule1);
 
 		// count the amount of all grades
 		String formula;
 		for (int i = 1; i <= 6; i++) {
-			formula = "COUNTIF(" + excelColumnNames.get(totalNotenColumnindex) + (startRow + 1) + ":"
-					+ excelColumnNames.get(totalNotenColumnindex) + (startRow + getSchoolClass().getSize()) + ","
-					+ excelColumnNames.get(notenBereicheEndeColumnIndex + 2) + (startRow + i) + ")";
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i - 1, notenBereicheEndeColumnIndex + 3,
+			formula = "COUNTIF(" + excelColumnNames.get(totalNotenColumnindex) + (startRow) + ":"
+					+ excelColumnNames.get(totalNotenColumnindex) + (startRow -1 + getSchoolClass().getSize()) + ","
+					+ excelColumnNames.get(notenBereicheEndeColumnIndex + 2) + (startRow + i -1) + ")";
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, startRow + i - 1 -1, notenBereicheEndeColumnIndex + 3,
 					formula);
 		}
 	}
@@ -355,6 +373,7 @@ public class ExcelWorkbookCreator {
 		int pointsMinColumn = startColumn + 2;
 		int percentColumn = startColumn + 3;
 		int gradesColumn = startColumn + 4;
+		this.columnIndexGrades = gradesColumn;
 		int countGradesColumn = startColumn + 5;
 
 		// headers
@@ -385,25 +404,27 @@ public class ExcelWorkbookCreator {
 		String cellNameTotalPoints = excelColumnNames.get(totalPointsColumnIndex) + startRow;
 
 		// Noten
+		this.rowIndexFirstGrade = rowIdx;
 		for (int i = 1; i <= 6; i++) {
-			ExcelSheetFunctions.setCellText(sheet, rowIdx + i - 1, gradesColumn, i);
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowIdx + i - 1, percentColumn, percentageFormulas[i - 1]);
+			int rowNumber = rowIdx + i - 1;
+			ExcelSheetFunctions.setCellText(sheet, rowNumber, gradesColumn, i);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNumber, percentColumn, percentageFormulas[i - 1]);
 			if (i == 1) {
 				formula = cellNameTotalPoints;
 			} else {
-				formula = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + (rowIdx + i - 1) + "*"
+				formula = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + rowNumber + "*"
 						+ cellNameTotalPoints + "/100*2,0)/2-0.5";
 			}
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowIdx + i - 1, pointsMaxColumn, formula);
-			sheet.getRow(rowIdx + i - 1).getCell(pointsMaxColumn).setCellStyle(rightAlignStyle);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNumber, pointsMaxColumn, formula);
+			sheet.getRow(rowNumber).getCell(pointsMaxColumn).setCellStyle(rightAlignStyle);
 
-			ExcelSheetFunctions.setCellText(sheet, rowIdx + i - 1, pointsMaxColumn + 1, "-");
-			sheet.getRow(rowIdx + i - 1).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
+			ExcelSheetFunctions.setCellText(sheet, rowNumber, pointsMaxColumn + 1, "-");
+			sheet.getRow(rowNumber).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
 
 			formula = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + (rowIdx + i) + "*" + cellNameTotalPoints
 					+ "/100*2,0)/2";
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowIdx + i - 1, pointsMinColumn, formula);
-			sheet.getRow(rowIdx + i - 1).getCell(pointsMinColumn).setCellStyle(leftAlignStyle);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNumber, pointsMinColumn, formula);
+			sheet.getRow(rowNumber).getCell(pointsMinColumn).setCellStyle(leftAlignStyle);
 		}
 
 		// borders
