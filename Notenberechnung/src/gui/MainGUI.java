@@ -1,51 +1,47 @@
 package gui;
 
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import excel.ExcelWorkbookCreator;
 import extras.Error;
 import log.IF_Log;
 import log.Log;
-import school.NormalExercise;
 import school.ExerciseInterface;
+import school.NormalExercise;
 import school.SchoolClass;
 import school.TextproductionExercise;
 import utils.UpdatePublisher;
 
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-
-public class Notenberechnung_GUI implements UpdatePublisher {
-
-	public final static String VERSION = "0.3.0";
-
+public class MainGUI implements UpdatePublisher, IF_GUI {
+	
 	// shell
 	protected Shell shell;
-
-	public final static int BACKGROUND_COLOR_RED = 245;
-	public final static int BACKGROUND_COLOR_GREEN = 245;
-	public final static int BACKGROUND_COLOR_BLUE = 245;
-
+	
+	public final static int BACKGROUND_COLOR_RGB_RED = 245;
+	public final static int BACKGROUND_COLOR_RGB_GREEN = 245;
+	public final static int BACKGROUND_COLOR_RGB_BLUE = 245;
+	
 	// strings
 	private final String ARROW_UPWARDS = "\u2191";
 	private final String ARROW_DOWNWARDS = "\u2193";
@@ -61,42 +57,16 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 	// custom objects
 	private SchoolClass schoolClass;
 
-	private static Log log;
-
 	// tables
 	private static Table tabExercises;
-
-	/**
-	 * Launch the application.
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		log = new Log();
-		log.addMessage("Starting program (v" + VERSION + ")");
-
-		// Try to start the program
-		try {
-			Notenberechnung_GUI window = new Notenberechnung_GUI();
-			log.addMessage("Starting GUI");
-			window.open();
-			log.addMessage("GUI closed");
-		} catch (Exception e) {
-			System.out.println(e.toString());
-			log.addMessage("Error stopped program");
-			
-			StringWriter error = new StringWriter();
-			e.printStackTrace(new PrintWriter(error));
-			log.addMessage(error.toString());
-		}
-
-		//
-		log.addMessage("Program stopped");
+	
+	private Log log;
+	
+	
+	public MainGUI(Log log) {
+		this.log = log;
 	}
-
-	/**
-	 * Open the window.
-	 */
+	
 	public void open() {
 		Display display = Display.getDefault();
 		createContents();
@@ -108,21 +78,21 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 			}
 		}
 	}
-
+	
 	/**
 	 * Create contents of the window.
 	 */
 	protected void createContents() {
 
-		final Notenberechnung_GUI gui = this;
+		final MainGUI gui = this;
 
 		shell = new Shell();
-		shell.setImage(SWTResourceManager.getImage(Notenberechnung_GUI.class, "/gui/icon.png"));
+		shell.setImage(SWTResourceManager.getImage(MainGUI.class, "/gui/icon.png"));
 		shell.setSize(600, 400);
 		shell.setText("Erstellen einer Excel-Datei zur Notenauswertung");
 		shell.setLayout(new GridLayout(3, false));
 		shell.setBackground(
-				new Color(shell.getDisplay(), BACKGROUND_COLOR_RED, BACKGROUND_COLOR_GREEN, BACKGROUND_COLOR_BLUE, 0));
+				new Color(shell.getDisplay(), BACKGROUND_COLOR_RGB_RED, BACKGROUND_COLOR_RGB_GREEN, BACKGROUND_COLOR_RGB_BLUE, 0));
 
 		Color transparentBackgroundColor = new Color(shell.getDisplay(), 255, 255, 255, 0);
 
@@ -293,13 +263,13 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 
 		Label versionInfoLabel = new Label(shell, SWT.NONE);
 		versionInfoLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 3, 1));
-		versionInfoLabel.setText("v" + VERSION);
+		versionInfoLabel.setText("v" + Main.VERSION);
 		versionInfoLabel.setBackground(transparentBackgroundColor);
 
 		// set all buttons enabled/disabled depending on the current contents
 		setButtonsEnables();
 	}
-
+	
 	/**
 	 * Method to start creating the excel worksheet based on the school class file,
 	 * which the user selected, and the tasks, which have been created
@@ -324,7 +294,7 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 		}
 	}
 	
-	private void openNewExerciseDialog(Notenberechnung_GUI par) {
+	private void openNewExerciseDialog(IF_GUI par) {
 		// open a new dialog for creating a task
 		ExerciseDialog na = new ExerciseDialog(par, shell);
 		na.open();
@@ -547,4 +517,5 @@ public class Notenberechnung_GUI implements UpdatePublisher {
 		}
 
 	}
+
 }
