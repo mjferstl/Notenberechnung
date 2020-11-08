@@ -6,7 +6,7 @@ import log.Log;
 
 public class Main {
 
-	public final static String VERSION = "0.3.3";
+	public final static String VERSION = "0.3.4";
 	
 	private static Log log;
 
