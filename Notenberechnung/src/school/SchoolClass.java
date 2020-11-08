@@ -16,7 +16,7 @@ public class SchoolClass {
 
 	private List<Student> studentList = new ArrayList<Student>();
 	private String className;
-	private final Pattern studentNamePattern = Pattern.compile("(\\w+[^\\t]*)(,|\\t)+(\\w+[^\\t]*)");
+	private final Pattern studentNamePattern = Pattern.compile("(\\w+[^\\t,]*)(\\s*(,|\\t)+\\s*)+(\\w+[^\\t]*)");
 
 	/**
 	 * Constructor with no arguments. The name of the class is set to "Klasse"
@@ -194,7 +194,7 @@ public class SchoolClass {
 			Matcher m = studentNamePattern.matcher(line);
 			if (m.find()) {
 				firstname = m.group(1).trim();
-				lastname = m.group(3).trim();
+				lastname = m.group(4).trim();
 
 				Student student = new Student(lastname, firstname);
 				addStudent(student);
