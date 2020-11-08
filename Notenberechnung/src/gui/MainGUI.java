@@ -127,7 +127,7 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
 					lblSchoolClassFile.setText(fileName);
 					lblSchoolClassFile.requestLayout();
 
-					addLogMessage("Klassenliste ausgewählt", IF_Log.LOG_INFO);
+					addLogMessage(String.format("Klassenliste \"%s\" ausgewählt", fileName), IF_Log.LOG_INFO);
 
 					schoolClass = new SchoolClass();
 					String filePath = fileDirectory + "\\" + fileName;

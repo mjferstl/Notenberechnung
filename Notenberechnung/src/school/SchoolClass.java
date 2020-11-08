@@ -210,7 +210,7 @@ public class SchoolClass {
 
 		// No Error
 		err.setErrorLevel(0);
-		err.setMessage("Klassenliste mit " + this.studentList.size() + " Schülernnamen erfolgreich eingelesen");
+		err.setMessage(this.studentList.size() + " Schülernnamen erfolgreich eingelesen");
 		return err;
 	}
 
