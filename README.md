@@ -11,7 +11,7 @@ Benutzeroberfläche<br>
 Erstelle Vorlage in MS Excel<br>
 <img src="Notenberechnung/images/Excel_v0.3.0.png" width="700" />
 
-Beispiel für eine Klassenliste in der Datei DemoKlasse.txt.
+Beispiel für eine Klassenliste in der Datei [DemoKlasse.txt](./Notenberechnung/DemoKlasse.txt). 
 Vor- und Nachname(n) können durch Kommas oder Tabs getrennt werden.
 ```
 Adriana C. , Ocampo Uria
