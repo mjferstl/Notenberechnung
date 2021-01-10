@@ -13,7 +13,7 @@ import school.exercise.*;
 public class ExerciseDialog extends Dialog {
 
 	// doubles
-	private final double errorId = 999999;
+	private final double ERROR_ID = 999999;
 
 	// labels
 	private Label lblText1, lblText2, lblText3;
@@ -26,7 +26,7 @@ public class ExerciseDialog extends Dialog {
 
 	// strings
 	private final String AUFGABE = "Aufgabe";
-	private final String TP = "Textproduktion";
+	private final String TEXTPRODUCTION = "Textproduktion";
 	private final String CONTENT = TextproductionExercise.CONTENT;
 	private final String LANGUAGE = TextproductionExercise.LANGUAGE;
 	private final String WEIGHTING = NormalExercise.WEIGHTING;
@@ -173,7 +173,7 @@ public class ExerciseDialog extends Dialog {
 				}
 			}
 		});
-		btnRadioTP.setText(TP);
+		btnRadioTP.setText(TEXTPRODUCTION);
 
 		Label lblTaskName = new Label(shell, SWT.NONE);
 		lblTaskName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -232,13 +232,13 @@ public class ExerciseDialog extends Dialog {
 					// get the specified task name
 					String bezeichnung = tbTaskName.getText();
 					if (bezeichnung.trim().equals("")) {
-						bezeichnung = "Aufgabe";
+						bezeichnung = AUFGABE;
 					}
 
 					if (gewichtung == 0.0) {
 						gewichtung = 1.0;
 					}
-					if (be != errorId && gewichtung != errorId) {
+					if (be != ERROR_ID && gewichtung != ERROR_ID) {
 						Exercise a = new NormalExercise(bezeichnung, new NormalExerciseEvaluation(gewichtung, be));
 						if (loadTask) {
 							guiInterface.updateTask(a, tableIndex);
@@ -254,13 +254,13 @@ public class ExerciseDialog extends Dialog {
 					// get the specified task name
 					String bezeichnung = tbTaskName.getText();
 					if (bezeichnung.trim().equals("")) {
-						bezeichnung = "Textproduktion";
+						bezeichnung = TEXTPRODUCTION;
 					}
 
 					if (gewichtung == 0.0) {
 						gewichtung = 1.0;
 					}
-					if (inhalt != errorId && sprache != errorId && gewichtung != errorId) {
+					if (inhalt != ERROR_ID && sprache != ERROR_ID && gewichtung != ERROR_ID) {
 						Exercise tp = new TextproductionExercise(bezeichnung, new TextProductionEvaluation(gewichtung, inhalt, sprache));
 						if (loadTask) {
 							guiInterface.updateTask(tp, tableIndex);
@@ -296,8 +296,7 @@ public class ExerciseDialog extends Dialog {
 	}
 
 	/**
-	 * load contents of imported task to the gui
-	 * 
+	 * Load the data of a task to the GUI
 	 */
 	private void loadImportedTask() {
 
@@ -341,10 +340,11 @@ public class ExerciseDialog extends Dialog {
 	}
 
 	/**
-	 * get the corresponding double value from an input string
+	 * Converts a String to a double value
+	 * An empty String will be converted to 0.0
 	 * 
-	 * @param string: input string
-	 * @return converted double
+	 * @param string string to convert
+	 * @return converted double value
 	 */
 	private double getDoubleFromInput(String string) {
 
@@ -355,7 +355,7 @@ public class ExerciseDialog extends Dialog {
 				return Double.parseDouble(string);
 			} catch (NumberFormatException e) {
 				updateLogwindow("Input konnte nicht verarbeitet werden.", LogType.ERROR);
-				return errorId;
+				return ERROR_ID;
 			}
 		}
 	}

@@ -1,5 +1,7 @@
 package school.exercise;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +13,7 @@ public class NormalExercise extends Exercise {
 	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern PATTERN = Pattern.compile(CONFIG_PATTERN);
 	
-	public NormalExercise(String name, NormalExerciseEvaluation evaluation) {
+	public NormalExercise(@NonNull String name, NormalExerciseEvaluation evaluation) {
 		super(name, evaluation);
 	}
 	
@@ -29,7 +31,7 @@ public class NormalExercise extends Exercise {
 				throw new NumberFormatException(String.format("Cannot convert the Strings %s and %s to double", m.group(1), m.group(2)));
 			}
 		} else {
-			throw new RuntimeException(String.format("The String \"%s\" does not represent a TextproductionExercise in the format: %s", text, PATTERN.pattern()));
+			throw new RuntimeException(String.format("The String \"%s\" does not represent a NormalExercise in the format: %s", text, PATTERN.pattern()));
 		}		
 	}
 

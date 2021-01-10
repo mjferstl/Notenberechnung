@@ -50,7 +50,6 @@ public class ExcelWorkbookCreator {
 		if (parent == null) throw new NullPointerException("The argument parent is null. It needs to be an object, which implements the interface UpdatePublisher");
 
 		this.parent = parent;
-
 		setSchoolClass(schoolClass);
 		setExerciseList(exercises);
 	}

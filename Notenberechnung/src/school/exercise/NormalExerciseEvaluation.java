@@ -1,7 +1,5 @@
 package school.exercise;
 
-import school.exercise.Evaluation;
-
 public class NormalExerciseEvaluation extends Evaluation {
 
     private double BE;
