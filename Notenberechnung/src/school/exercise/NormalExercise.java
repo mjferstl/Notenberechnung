@@ -1,4 +1,4 @@
-package school;
+package school.exercise;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

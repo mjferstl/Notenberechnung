@@ -12,6 +12,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import school.*;
+import school.exercise.Exercise;
+import school.exercise.NormalExercise;
+import school.exercise.TextproductionExercise;
 import utils.UpdatePublisher;
 
 import java.io.File;
@@ -33,7 +36,7 @@ public class ExcelWorkbookCreator {
 	private final String DIAMETER = "\u2300";
 
 	private int totalNotenColumnindex, notenBereicheEndeColumnIndex, totalPointsColumnIndex;
-	private String totalPointsFormula = "";
+	private StringBuilder totalPointsFormulaBuilder = new StringBuilder();
 	private final List<String> resultColumns = new ArrayList<>();
 
 	private SchoolClass schoolClass;
@@ -82,7 +85,7 @@ public class ExcelWorkbookCreator {
 		} else {
 			// remove all current item from the lists and formulas
 			resultColumns.clear();
-			totalPointsFormula = "";
+			totalPointsFormulaBuilder = new StringBuilder();
 
 			Workbook workbook = new XSSFWorkbook();
 			this.sheet = workbook.createSheet(getSchoolClass().getClassName());
@@ -195,7 +198,7 @@ public class ExcelWorkbookCreator {
 				}
 
 				if (returnValue != null) {
-					totalPointsFormula = totalPointsFormula + returnValue.getFormula() + "+";
+					totalPointsFormulaBuilder.append(returnValue.getFormula()).append("+");
 					resultColumns.add(returnValue.getColumnName());
 				}
 			}
@@ -224,6 +227,7 @@ public class ExcelWorkbookCreator {
 		// increment row index
 		rowIdx += 2;
 
+		String totalPointsFormula = totalPointsFormulaBuilder.toString();
 		String formula = totalPointsFormula.substring(0, totalPointsFormula.length() - 1);
 		ExcelSheetFunctions.setCellTextAsFormula(sheet, rowIdx, startColumn, formula);
 		sheet.getRow(rowIdx).getCell(startColumn).setCellStyle(boldStyle);

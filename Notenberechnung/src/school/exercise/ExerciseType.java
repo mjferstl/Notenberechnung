@@ -1,4 +1,4 @@
-package school;
+package school.exercise;
 
 public enum ExerciseType {
 

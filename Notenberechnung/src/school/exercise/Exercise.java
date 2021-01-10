@@ -1,4 +1,4 @@
-package school;
+package school.exercise;
 
 import org.eclipse.jdt.annotation.NonNull;
 

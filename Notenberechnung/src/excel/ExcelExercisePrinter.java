@@ -7,9 +7,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import extras.ExcelSheetFunctions;
-import school.NormalExercise;
-import school.TextProductionEvaluation;
-import school.TextproductionExercise;
+import school.exercise.NormalExercise;
+import school.exercise.TextproductionExercise;
 
 public class ExcelExercisePrinter {
 

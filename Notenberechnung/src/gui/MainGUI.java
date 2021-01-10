@@ -17,6 +17,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import school.*;
+import school.exercise.Exercise;
+import school.exercise.NormalExercise;
+import school.exercise.TextproductionExercise;
 import utils.UpdatePublisher;
 
 import java.io.File;
@@ -353,19 +356,11 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
         String bezeichnung = tableItem.getText(1);
         String text = tableItem.getText(2);
 
-        switch (tableItem.getText(0)) {
-            case NormalExercise.SHORT_KEY:
-                NormalExercise exercise = NormalExercise.parseTextToAufgabe(bezeichnung, text);
-                if (exercise != null) {
-                    return exercise;
-                }
-                break;
-            case TextproductionExercise.SHORT_KEY:
-                return TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
-            default:
-                return null;
-        }
-        return null;
+        return switch (tableItem.getText(0)) {
+            case NormalExercise.SHORT_KEY -> NormalExercise.parseTextToAufgabe(bezeichnung, text);
+            case TextproductionExercise.SHORT_KEY -> TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
+            default -> throw new IllegalStateException("Unexpected value: " + tableItem.getText(0));
+        };
     }
 
     /**
@@ -472,13 +467,6 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
 
             btnOpenExcel.deactivate();
         }
-    }
-
-    private void formatLabelText(Display display, Label label, int style) {
-        // get the font of the label
-        FontData fontData = label.getFont().getFontData()[0];
-        Font font = new Font(display, new FontData(fontData.getName(), fontData.getHeight(), style));
-        label.setFont(font);
     }
 
     @Override

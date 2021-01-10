@@ -8,7 +8,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import school.*;
+import school.exercise.*;
 
 public class ExerciseDialog extends Dialog {
 

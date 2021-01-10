@@ -1,4 +1,6 @@
-package school;
+package school.exercise;
+
+import school.exercise.Evaluation;
 
 public class TextProductionEvaluation extends Evaluation {
 
