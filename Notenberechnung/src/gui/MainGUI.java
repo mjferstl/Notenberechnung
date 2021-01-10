@@ -343,9 +343,7 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
         for (int i = 0; i < tabExercises.getItemCount(); i++) {
             TableItem ti = tabExercises.getItem(i);
             Exercise exercise = parseTableItemToExercise(ti);
-            if (exercise != null) {
-                exerciseList.add(exercise);
-            }
+            exerciseList.add(exercise);
         }
 
         return exerciseList;
