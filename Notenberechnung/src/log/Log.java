@@ -3,31 +3,38 @@ package log;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 
-public class Log implements IF_Log{
+/**
+ * Singleton-Pattern
+ */
+public class Log implements IF_Log {
 	
 	private LogFileManager logFileManager;
 	private SWTLog swtLog;
+
+	private static Log instance = null;
 	
-	public Log() {
+	private Log() {
 		initLogFileManager();
 	}
-	
-	public Log(Composite parent) {
-		initLogFileManager();
-		createSwtLog(parent);
+
+	public static Log getInstance() {
+		if (instance == null) {
+			instance = new Log();
+		}
+		return instance;
 	}
-	
+
 	public void addMessage(String message) {
-		this.addMessage(message, LOG_INFO);
+		this.addMessage(message, LogType.INFO);
 	}
 	
-	public void addMessage(String message, int level) {
+	public void addMessage(String message, LogType logType) {
 		if (this.logFileManager != null) {
 			writeLogMessageToFile(message);
 		}
 		
 		if (this.getSwtLog() != null) {
-			this.swtLog.addLogMessage(message, getLogColor(level));
+			this.swtLog.addLogMessage(message, getLogColor(logType));
 		}
 	}
 	
@@ -53,25 +60,12 @@ public class Log implements IF_Log{
 		return this.swtLog;
 	}
 	
-	private Color getLogColor(int logLevel) {
-		
-		Color logColor;
-		
-		switch (logLevel) {
-		case IF_Log.LOG_ERROR:
-			logColor = IF_Log.RED;
-			break;
-		case IF_Log.LOG_SUCCESS:
-			logColor = IF_Log.GREEN;
-			break;
-		case IF_Log.LOG_INFO:
-			logColor = IF_Log.BLACK;
-			break;
-		default:
-			logColor = IF_Log.BLACK;
-		}
-		
-		return logColor;
+	private Color getLogColor(LogType logType) {
+
+		return switch (logType) {
+			case ERROR -> IF_Log.RED;
+			case INFO, WARNING -> IF_Log.BLACK;
+		};
 	} 
 
 }

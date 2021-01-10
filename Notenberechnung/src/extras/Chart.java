@@ -24,7 +24,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 public class Chart {
 	
-	private XSSFSheet xssfsheet;
+	private final XSSFSheet xssfsheet;
 	private XDDFDataSource<Double> xAxisData;
 	private XDDFNumericalDataSource<Double> yAxisData;
 	private int startRow, endRow, startColumn, endColumn;

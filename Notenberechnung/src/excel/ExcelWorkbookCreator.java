@@ -1,6 +1,18 @@
 package excel;
 
-import static org.junit.Assert.assertEquals;
+import extras.Chart;
+import extras.ExcelSheetFunctions;
+import log.LogType;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold.RangeType;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
+import school.*;
+import utils.UpdatePublisher;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,29 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.ColorScaleFormatting;
-import org.apache.poi.ss.usermodel.ConditionalFormattingRule;
-import org.apache.poi.ss.usermodel.ExtendedColor;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.SheetConditionalFormatting;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.ConditionalFormattingThreshold.RangeType;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
-import extras.Chart;
-import extras.ExcelSheetFunctions;
-import log.IF_Log;
-import school.ExerciseInterface;
-import school.NormalExercise;
-import school.SchoolClass;
-import school.Student;
-import school.TextproductionExercise;
-import utils.UpdatePublisher;
+import static org.junit.Assert.assertEquals;
 
 public class ExcelWorkbookCreator {
 
@@ -44,39 +34,37 @@ public class ExcelWorkbookCreator {
 
 	private int totalNotenColumnindex, notenBereicheEndeColumnIndex, totalPointsColumnIndex;
 	private String totalPointsFormula = "";
-	private List<String> resultColumns = new ArrayList<String>();
+	private final List<String> resultColumns = new ArrayList<>();
 
 	private SchoolClass schoolClass;
-	private List<ExerciseInterface> exerciseList;
+	private List<Exercise> exerciseList;
 	private Sheet sheet;
 
-	private UpdatePublisher parent;
+	private final UpdatePublisher parent;
 
-	public ExcelWorkbookCreator(UpdatePublisher parent, SchoolClass schoolClass, List<ExerciseInterface> exercises) {
+	public ExcelWorkbookCreator(UpdatePublisher parent, SchoolClass schoolClass, List<Exercise> exercises) {
+
+		if (parent == null) throw new NullPointerException("The argument parent is null. It needs to be an object, which implements the interface UpdatePublisher");
+
+		this.parent = parent;
+
 		setSchoolClass(schoolClass);
 		setExerciseList(exercises);
-
-		if (parent instanceof UpdatePublisher) {
-			this.parent = parent;
-		} else {
-			throw new RuntimeException(
-					"The class " + parent.toString() + " needs to implement UpdatePublisher");
-		}
 	}
 
 	public SchoolClass getSchoolClass() {
 		return schoolClass;
 	}
 
-	public void setSchoolClass(SchoolClass schoolClass) {
+	public void setSchoolClass(@NonNull SchoolClass schoolClass) {
 		this.schoolClass = schoolClass;
 	}
 
-	public List<ExerciseInterface> getExerciseList() {
+	public List<Exercise> getExerciseList() {
 		return exerciseList;
 	}
 
-	public void setExerciseList(List<ExerciseInterface> exerciseList) {
+	public void setExerciseList(List<Exercise> exerciseList) {
 		this.exerciseList = exerciseList;
 	}
 
@@ -87,10 +75,10 @@ public class ExcelWorkbookCreator {
 		
 		File xlsxFile = null;
 
-		if (getSchoolClass() == null || getSchoolClass().isEmpty()) {
-			printLogMessage("Keine Klassenliste ausgew‰hlt...", IF_Log.LOG_ERROR);
+		if (getSchoolClass() == null || getSchoolClass().hasNoStudents()) {
+			printLogMessage("Keine Klassenliste ausgew√§hlt...", LogType.ERROR);
 		} else if (getExerciseList().isEmpty()) {
-			printLogMessage("Keine Aufgaben angelegt...", IF_Log.LOG_ERROR);
+			printLogMessage("Keine Aufgaben angelegt...", LogType.ERROR);
 		} else {
 			// remove all current item from the lists and formulas
 			resultColumns.clear();
@@ -108,7 +96,7 @@ public class ExcelWorkbookCreator {
 
 			// print the names of all students
 			printSchoolClass(sheet, rowNum, columnIndex);
-			columnIndex += ExcelStudent.getHeaderLength();
+			columnIndex += StudentExcelDecorator.getHeaderLength();
 
 			// add columns for displaying the grade
 			addGradesColumn(sheet, rowNum, columnIndex);
@@ -144,19 +132,19 @@ public class ExcelWorkbookCreator {
 
 	private void printSchoolClass(Sheet sheet, int startRow, int startColumn) {
 
-		ExcelStudent.printHeader(sheet, startRow, startColumn);
+		StudentExcelDecorator.printHeader(sheet, startRow, startColumn);
 
 		startRow++;
 
 		// borders
 		ExcelSheetFunctions
 				.setRegionBorderThin(new CellRangeAddress(startRow, startRow + getSchoolClass().getSize() - 1,
-						startColumn, startColumn + ExcelStudent.getHeaderLength() - 1), sheet);
+						startColumn, startColumn + StudentExcelDecorator.getHeaderLength() - 1), sheet);
 
 		int temp_rowNum = startRow;
-		for (Student schueler : getSchoolClass().getStudentList()) {
-			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, startColumn, schueler.getSurname());
-			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, startColumn + 1, schueler.getFirstName());
+		for (Student student : getSchoolClass().getStudentList()) {
+			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, startColumn, student.getSurname());
+			ExcelSheetFunctions.setCellText(sheet, temp_rowNum, startColumn + 1, student.getFirstName());
 			temp_rowNum++;
 		}
 
@@ -184,27 +172,26 @@ public class ExcelWorkbookCreator {
 		this.totalNotenColumnindex = startColumn + 1;
 	}
 
-	private int printExercises(List<ExerciseInterface> exerciseList, int startRow, int startColumn) {
+	private int printExercises(List<Exercise> exerciseList, int startRow, int startColumn) {
 
 		int column = startColumn;
 		int numRows = getSchoolClass().getSize();
 		ExcelStdReturn returnValue;
 
-		for (ExerciseInterface exercise : exerciseList) {
+		for (Exercise exercise : exerciseList) {
 			if (exercise != null) {
-				switch (exercise.getType()) {
-				case ExerciseInterface.TYPE_NORMAL_EXERCISE:
-					returnValue = ExcelExercisePrinter.printNormalExercise(sheet, (NormalExercise) exercise, startRow,
-							column, numRows);
-					column += ExcelExercisePrinter.COLUMN_RANGE_NORMAL_EXERCISE;
-					break;
-				case ExerciseInterface.TYPE_TEXTPRODUCTION_EXERCISE:
-					returnValue = ExcelExercisePrinter.printTextproductionExercise(sheet,
-							(TextproductionExercise) exercise, startRow, column, numRows);
-					column += ExcelExercisePrinter.COLUMN_RANGE_TEXTPRODUCTION_EXERCISE;
-					break;
-				default:
-					returnValue = null;
+				switch (exercise.getExerciseType()) {
+					case NORMAL_TASK -> {
+						returnValue = ExcelExercisePrinter.printNormalExercise(sheet, (NormalExercise) exercise, startRow,
+								column, numRows);
+						column += ExcelExercisePrinter.COLUMN_RANGE_NORMAL_EXERCISE;
+					}
+					case TEXT_PRODUCTION -> {
+						returnValue = ExcelExercisePrinter.printTextproductionExercise(sheet,
+								(TextproductionExercise) exercise, startRow, column, numRows);
+						column += ExcelExercisePrinter.COLUMN_RANGE_TEXTPRODUCTION_EXERCISE;
+					}
+					default -> returnValue = null;
 				}
 
 				if (returnValue != null) {
@@ -251,10 +238,13 @@ public class ExcelWorkbookCreator {
 				new CellRangeAddress(rowIdx, rowIdx + getSchoolClass().getSize() - 1, startColumn, startColumn), sheet);
 
 		for (int i = 0; i < getSchoolClass().getSize(); i++) {
-			string = "";
-			for (int j = 0; j < resultColumns.size(); j++) {
-				string = string + resultColumns.get(j) + (rowIdx + 1) + "+";
+			StringBuilder stringBuilder = new StringBuilder();
+			for (String resultColumn : resultColumns) {
+				stringBuilder.append(resultColumn)
+						.append(rowIdx + 1)
+						.append("+");
 			}
+			string = stringBuilder.toString();
 			string = string.substring(0, string.length() - 1);
 			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowIdx, startColumn, string);
 			rowIdx++;
@@ -369,7 +359,6 @@ public class ExcelWorkbookCreator {
 
 		int rowIdx = startRow - 1;
 
-		int pointsMaxColumn = startColumn;
 		int pointsMinColumn = startColumn + 2;
 		int percentColumn = startColumn + 3;
 		int gradesColumn = startColumn + 4;
@@ -377,16 +366,16 @@ public class ExcelWorkbookCreator {
 		int countGradesColumn = startColumn + 5;
 
 		// headers
-		ExcelSheetFunctions.setCellText(sheet, rowIdx, pointsMaxColumn, "Punktebereich");
-		sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, pointsMaxColumn, pointsMinColumn));
-		sheet.setColumnWidth(pointsMaxColumn + 1, 3 * 256); // Minus-Zeichen
+		ExcelSheetFunctions.setCellText(sheet, rowIdx, startColumn, "Punktebereich");
+		sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, startColumn, pointsMinColumn));
+		sheet.setColumnWidth(startColumn + 1, 3 * 256); // Minus-Zeichen
 		ExcelSheetFunctions.setCellText(sheet, rowIdx, percentColumn, "Prozent");
 		sheet.setColumnWidth(percentColumn, 10 * 256);
 		ExcelSheetFunctions.setCellText(sheet, rowIdx, gradesColumn, "Note");
 		sheet.setColumnWidth(gradesColumn, 10 * 256);
 		ExcelSheetFunctions.setCellText(sheet, rowIdx, countGradesColumn, "Anzahl");
 
-		sheet.getRow(rowIdx).getCell(pointsMaxColumn).setCellStyle(boldCenteredStyle);
+		sheet.getRow(rowIdx).getCell(startColumn).setCellStyle(boldCenteredStyle);
 		sheet.getRow(rowIdx).getCell(percentColumn).setCellStyle(boldCenteredStyle);
 		sheet.getRow(rowIdx).getCell(gradesColumn).setCellStyle(boldCenteredStyle);
 		sheet.getRow(rowIdx).getCell(countGradesColumn).setCellStyle(boldCenteredStyle);
@@ -415,11 +404,11 @@ public class ExcelWorkbookCreator {
 				formula = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + rowNumber + "*"
 						+ cellNameTotalPoints + "/100*2,0)/2-0.5";
 			}
-			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNumber, pointsMaxColumn, formula);
-			sheet.getRow(rowNumber).getCell(pointsMaxColumn).setCellStyle(rightAlignStyle);
+			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNumber, startColumn, formula);
+			sheet.getRow(rowNumber).getCell(startColumn).setCellStyle(rightAlignStyle);
 
-			ExcelSheetFunctions.setCellText(sheet, rowNumber, pointsMaxColumn + 1, "-");
-			sheet.getRow(rowNumber).getCell(pointsMaxColumn + 1).setCellStyle(centeredStyle);
+			ExcelSheetFunctions.setCellText(sheet, rowNumber, startColumn + 1, "-");
+			sheet.getRow(rowNumber).getCell(startColumn + 1).setCellStyle(centeredStyle);
 
 			formula = "ROUNDDOWN(" + excelColumnNames.get(percentColumn) + (rowIdx + i) + "*" + cellNameTotalPoints
 					+ "/100*2,0)/2";
@@ -486,7 +475,7 @@ public class ExcelWorkbookCreator {
 		File excelFile = null;
 
 		if (selected == null) {
-			printLogMessage("Keine Datei ausgew‰hlt. Liste wurde nicht gespeichert.", IF_Log.LOG_ERROR);
+			printLogMessage("Keine Datei ausgew√§hlt. Liste wurde nicht gespeichert.", LogType.ERROR);
 		} else {
 			// Write the output to a file
 			FileOutputStream fileOut;
@@ -495,11 +484,11 @@ public class ExcelWorkbookCreator {
 				workbook.write(fileOut);
 				workbook.close();
 				fileOut.close();
-				printLogMessage("Excel-Datei erfolgreich erstellt", IF_Log.LOG_SUCCESS);
+				printLogMessage("Excel-Datei erfolgreich erstellt", LogType.INFO);
 				excelFile = new File(selected);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
-				printLogMessage("Die Datei konnte nicht erstellt werden", IF_Log.LOG_ERROR);
+				printLogMessage("Die Datei konnte nicht erstellt werden", LogType.ERROR);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -508,9 +497,9 @@ public class ExcelWorkbookCreator {
 		return excelFile;
 	}
 
-	private void printLogMessage(String message, int logLevel) {
+	private void printLogMessage(String message, LogType logType) {
 		if (parent != null) {
-			parent.publishUpdate(message, logLevel);
+			parent.publishUpdate(message, logType);
 		} else {
 			throw new RuntimeException("The variable \"parent\" has not been initialized.");
 		}

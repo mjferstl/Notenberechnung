@@ -1,18 +1,17 @@
 package gui;
 
-import java.awt.Desktop;
-import java.io.File;
-import java.io.IOException;
-
+import log.LogType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Listener;
-
-import log.IF_Log;
 import utils.UpdatePublisher;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 
 public class OpenFileButton extends Button {
 	
@@ -20,9 +19,9 @@ public class OpenFileButton extends Button {
 	
 	public OpenFileButton(UpdatePublisher parent, Composite composite, int style) {
 		super(composite, style);
-		this.setText("Datei öffnen");
+		this.setText("Datei Ã¶ffnen");
 		
-		if (parent instanceof UpdatePublisher) {
+		if (parent != null) {
 			this.updatePublisher = parent;
 		}
 	}
@@ -66,22 +65,25 @@ public class OpenFileButton extends Button {
 	}
 	
 	private void openFile(File file) {
+
+		if (file == null) throw new IllegalArgumentException("The argument file is null");
+
 		try {
-			publishUpdate(String.format("Die Datei \"%s\" wird geöffnet...", file.getName()));
+			publishUpdate(String.format("Die Datei \"%s\" wird geÃ¶ffnet...", file.getName()));
 			Desktop.getDesktop().open(file);
-			publishUpdate("Datei geöffnet");
+			publishUpdate("Datei geÃ¶ffnet");
 		} catch (IOException e) {
-			publishUpdate(String.format("Die Datei konnte nicht geöffnet werden", file.getName()), IF_Log.LOG_ERROR);
+			publishUpdate(String.format("Die Datei \"%s\" konnte nicht geÃ¶ffnet werden", file.getName()), LogType.ERROR);
 		}
 	}
 	
 	private void publishUpdate(String message) {
-		this.publishUpdate(message, IF_Log.LOG_INFO);
+		this.publishUpdate(message, LogType.INFO);
 	}
 	
-	private void publishUpdate(String message, int logLevel) {
+	private void publishUpdate(String message, LogType logType) {
 		if (this.updatePublisher != null) {
-			this.updatePublisher.publishUpdate(message, logLevel);
+			this.updatePublisher.publishUpdate(message, logType);
 		}
 	}
 	

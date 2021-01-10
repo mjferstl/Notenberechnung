@@ -6,17 +6,15 @@ import log.Log;
 
 public class Main {
 
-	public final static String VERSION = "0.3.4";
-	
-	private static Log log;
+	public final static String VERSION = "0.3.5";
 
 	/**
 	 * Launch the application.
 	 * 
-	 * @param args
+	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
-		log = new Log();
+		Log log = Log.getInstance();
 		log.addMessage("Starting program (v" + VERSION + ")");
 
 		// Try to start the program

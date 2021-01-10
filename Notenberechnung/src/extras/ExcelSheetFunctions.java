@@ -1,5 +1,8 @@
 package extras;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,18 +85,16 @@ public class ExcelSheetFunctions {
 				"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
 
 		// Bezeichnungen der Spalten in MS-Excel
-		if (columnNames.size() == 0) {
-			for (int i = 0; i < alphabet.length; i++) {
-				for (int j = 1; j < alphabet.length; j++) {
-					if (i == 0) {
-						columnNames.add(alphabet[j] + alphabet[i]);
-					} else {
-						columnNames.add(alphabet[i] + alphabet[j]);
-					}
+		for (int i = 0; i < alphabet.length; i++) {
+			for (int j = 1; j < alphabet.length; j++) {
+				if (i == 0) {
+					columnNames.add(alphabet[j] + alphabet[i]);
+				} else {
+					columnNames.add(alphabet[i] + alphabet[j]);
 				}
 			}
 		}
-		
+
 		return columnNames;
 	}
 

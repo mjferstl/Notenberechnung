@@ -2,8 +2,8 @@ package excel;
 
 public class ExcelStdReturn {
 	
-	private String formula = "";
-	private String columnName;
+	private final String formula;
+	private final String columnName;
 	
 	public ExcelStdReturn(String formula, String columnName) {
 		this.formula = formula;
@@ -14,18 +14,9 @@ public class ExcelStdReturn {
 		return formula;
 	}
 
-	public void setFormula(String formula) {
-		this.formula = formula;
-	}
-
 	public String getColumnName() {
 		return columnName;
 	}
 
-	public void setColumnName(String columnName) {
-		this.columnName = columnName;
-	}
-	
-	
 
 }

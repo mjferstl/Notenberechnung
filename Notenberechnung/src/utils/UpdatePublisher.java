@@ -1,5 +1,6 @@
 package utils;
 
+import log.LogType;
 import org.eclipse.swt.widgets.Shell;
 
 /**
@@ -7,11 +8,10 @@ import org.eclipse.swt.widgets.Shell;
  * Methods: publishUpdate, getShell
  * 
  * @author Mathias Ferstl
- * @date 25.10.2020
  * @version 1.0
  */
 public interface UpdatePublisher {
-	void publishUpdate(String message, int logLevel);
+	void publishUpdate(String message, LogType logType);
 
 	Shell getShell();
 }

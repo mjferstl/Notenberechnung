@@ -3,11 +3,7 @@ package extras;
 import org.eclipse.jdt.annotation.NonNull;
 
 public class Error {
-	
-	/*
-	 * Error flags
-	 */
-	
+
 	/**
 	 * Integer which represents a successful execution of a task.
 	 * Use this for indication that everything went fine.
@@ -48,8 +44,6 @@ public class Error {
 	 * The error level is set to Error.SUCCESS and the message is ""
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public Error() {
 		setErrorLevel(SUCCESS);
@@ -63,8 +57,6 @@ public class Error {
 	 * @param message String containing optional 
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public Error(int errorLevel, String message) {
 		setErrorLevel(errorLevel);

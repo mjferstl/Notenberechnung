@@ -5,15 +5,16 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import extras.ExcelSheetFunctions;
+import org.eclipse.jdt.annotation.NonNull;
 import school.Student;
 
-public class ExcelStudent {
+public class StudentExcelDecorator {
 	
 	private final static String[] HEADER = { "Nachname", "Vorname" };
 	
-	private Student student;
+	private final Student student;
 	
-	public ExcelStudent(Student student) {
+	public StudentExcelDecorator(@NonNull Student student) {
 		this.student = student;
 	}
 	

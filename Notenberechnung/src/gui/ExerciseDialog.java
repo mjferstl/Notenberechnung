@@ -1,32 +1,19 @@
 package gui;
 
+import log.LogType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Dialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-
-import log.IF_Log;
-import school.NormalExercise;
-import school.ExerciseInterface;
-import school.TextproductionExercise;
+import org.eclipse.swt.widgets.*;
+import school.*;
 
 public class ExerciseDialog extends Dialog {
 
-	private final int BACKGROUND_COLOR_RED = MainGUI.BACKGROUND_COLOR_RGB_RED;
-	private final int BACKGROUND_COLOR_GREEN = MainGUI.BACKGROUND_COLOR_RGB_GREEN;
-	private final int BACKGROUND_COLOR_BLUE = MainGUI.BACKGROUND_COLOR_RGB_BLUE;
-
 	// doubles
-	private double errorId = 999999;
+	private final double errorId = 999999;
 
 	// labels
 	private Label lblText1, lblText2, lblText3;
@@ -34,14 +21,8 @@ public class ExerciseDialog extends Dialog {
 	// edit text fields
 	private Text editText1, editText2, editText3;
 
-	// group
-	private Group groupAufgabentyp;
-
 	// buttons
 	private Button btnRadioAufgabe, btnRadioTP;
-
-	// display
-	private Display display;
 
 	// strings
 	private final String AUFGABE = "Aufgabe";
@@ -52,13 +33,13 @@ public class ExerciseDialog extends Dialog {
 	private final String BE = NormalExercise.BE;
 
 	// boolean
-	private boolean loadTask = false;
+	private boolean loadTask;
 
 	// integers
 	private int tableIndex;
 
 	// objects
-	private ExerciseInterface importedTask;
+	private Exercise importedTask;
 	private Text tbTaskName;
 
 	private IF_GUI guiInterface;
@@ -83,18 +64,13 @@ public class ExerciseDialog extends Dialog {
 	public ExerciseDialog(IF_GUI par, Shell parent, int style) {
 		// Let users override the default styles
 		super(parent, style);
-		setText("Aufgabe hinzufügen");
+		setText("Aufgabe hinzufÃ¼gen");
 		loadTask = false;
 		this.guiInterface = par;
 	}
 
-	/**
-	 * InputDialog constructor for selection Textproduktion with values
-	 * 
-	 * @param parent the parent
-	 * @param style  the style
-	 */
-	public ExerciseDialog(IF_GUI par, Shell parent, ExerciseInterface task, int index) {
+
+	public ExerciseDialog(IF_GUI par, Shell parent, Exercise task, int index) {
 		// Pass the default styles here
 		this(par, parent, SWT.DIALOG_TRIM);
 		setText("Aufgabe editieren");
@@ -106,9 +82,7 @@ public class ExerciseDialog extends Dialog {
 	}
 
 	/**
-	 * Opens the dialog and returns the input
-	 * 
-	 * @return String
+	 * Opens the dialog
 	 */
 	public void open() {
 		// Create the dialog window
@@ -118,7 +92,8 @@ public class ExerciseDialog extends Dialog {
 		createContents(shell);
 		shell.pack();
 		shell.open();
-		display = getParent().getDisplay();
+		// display
+		Display display = getParent().getDisplay();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -137,12 +112,16 @@ public class ExerciseDialog extends Dialog {
 		gridLayout.numColumns = 2;
 		gridLayout.makeColumnsEqualWidth = true;
 		shell.setLayout(gridLayout);
+		int BACKGROUND_COLOR_RED = MainGUI.BACKGROUND_COLOR_RGB_RED;
+		int BACKGROUND_COLOR_GREEN = MainGUI.BACKGROUND_COLOR_RGB_GREEN;
+		int BACKGROUND_COLOR_BLUE = MainGUI.BACKGROUND_COLOR_RGB_BLUE;
 		shell.setBackground(
 				new Color(shell.getDisplay(), BACKGROUND_COLOR_RED, BACKGROUND_COLOR_GREEN, BACKGROUND_COLOR_BLUE));
 
 		Color transparentBackgroundColor = new Color(shell.getDisplay(), 255, 255, 255, 0);
 
-		groupAufgabentyp = new Group(shell, SWT.NONE);
+		// group
+		Group groupAufgabentyp = new Group(shell, SWT.NONE);
 		GridData gridDataAufgabentyp = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		gridDataAufgabentyp.heightHint = 73;
 		groupAufgabentyp.setLayoutData(gridDataAufgabentyp);
@@ -252,7 +231,7 @@ public class ExerciseDialog extends Dialog {
 					double gewichtung = getDoubleFromInput(editText2.getText());
 					// get the specified task name
 					String bezeichnung = tbTaskName.getText();
-					if (bezeichnung == "") {
+					if (bezeichnung.trim().equals("")) {
 						bezeichnung = "Aufgabe";
 					}
 
@@ -260,14 +239,13 @@ public class ExerciseDialog extends Dialog {
 						gewichtung = 1.0;
 					}
 					if (be != errorId && gewichtung != errorId) {
-						NormalExercise a = new NormalExercise(bezeichnung, be, gewichtung);
+						Exercise a = new NormalExercise(bezeichnung, new NormalExerciseEvaluation(gewichtung, be));
 						if (loadTask) {
 							guiInterface.updateTask(a, tableIndex);
 						} else {
 							guiInterface.addTask(a);
 						}
 						shell.close();
-
 					}
 				} else if (btnRadioTP.getSelection()) {
 					double inhalt = getDoubleFromInput(editText1.getText());
@@ -275,7 +253,7 @@ public class ExerciseDialog extends Dialog {
 					double gewichtung = getDoubleFromInput(editText3.getText());
 					// get the specified task name
 					String bezeichnung = tbTaskName.getText();
-					if (bezeichnung == "") {
+					if (bezeichnung.trim().equals("")) {
 						bezeichnung = "Textproduktion";
 					}
 
@@ -283,8 +261,7 @@ public class ExerciseDialog extends Dialog {
 						gewichtung = 1.0;
 					}
 					if (inhalt != errorId && sprache != errorId && gewichtung != errorId) {
-						TextproductionExercise tp = new TextproductionExercise(bezeichnung, inhalt, sprache,
-								gewichtung);
+						Exercise tp = new TextproductionExercise(bezeichnung, new TextProductionEvaluation(gewichtung, inhalt, sprache));
 						if (loadTask) {
 							guiInterface.updateTask(tp, tableIndex);
 						} else {
@@ -342,26 +319,42 @@ public class ExerciseDialog extends Dialog {
 		}
 
 		// set entries in the text fields
-		editText1.setText(importedTask.getFirstParam());
-		editText2.setText(importedTask.getSecondParam());
-		editText3.setText(importedTask.getThirdParam());
+		String first = "", second = "", third = "";
+		switch (importedTask.getExerciseType()) {
+			case NORMAL_TASK -> {
+				NormalExercise exercise = (NormalExercise) importedTask;
+				NormalExerciseEvaluation evaluation = exercise.getEvaluation();
+				first = String.valueOf(evaluation.getBE());
+				second = String.valueOf(evaluation.getWeighting());
+			}
+			case TEXT_PRODUCTION -> {
+				TextproductionExercise exercise = (TextproductionExercise) importedTask;
+				TextProductionEvaluation evaluation = exercise.getEvaluation();
+				first = String.valueOf(evaluation.getPointsContent());
+				second = String.valueOf(evaluation.getPointsLanguage());
+				third = String.valueOf(evaluation.getWeighting());
+			}
+		}
+		editText1.setText(first);
+		editText2.setText(second);
+		editText3.setText(third);
 	}
 
 	/**
 	 * get the corresponding double value from an input string
 	 * 
 	 * @param string: input string
-	 * @return
+	 * @return converted double
 	 */
 	private double getDoubleFromInput(String string) {
 
-		if (string == "") {
+		if (string.trim().equals("")) {
 			return 0.0;
 		} else {
 			try {
 				return Double.parseDouble(string);
 			} catch (NumberFormatException e) {
-				updateLogwindow("Input konnte nicht verarbeitet werden.", "red");
+				updateLogwindow("Input konnte nicht verarbeitet werden.", LogType.ERROR);
 				return errorId;
 			}
 		}
@@ -369,26 +362,10 @@ public class ExerciseDialog extends Dialog {
 
 	/**
 	 * update the label at the bottom of the gui
-	 * 
-	 * @param text:  text to be shown in the label of the "logwindow"
-	 * @param color: textcolor
+	 *
+	 * @param text text to be shown in the label of the "logwindow"
 	 */
-	private void updateLogwindow(String text, String color) {
-		this.guiInterface.addLogMessage(text, IF_Log.LOG_INFO);
-//		logwindow.setText(text);
-//		switch (color) {
-//		case "blue":
-//			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLUE));
-//			break;
-//		case "red":
-//			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
-//			break;
-//		case "green":
-//			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
-//			break;
-//		default:
-//			logwindow.setForeground(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-//		}
-//		logwindow.requestLayout();
+	private void updateLogwindow(String text, LogType logType) {
+		this.guiInterface.addLogMessage(text, logType);
 	}
 }

@@ -11,10 +11,11 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import extras.Error;
 import utils.TextFileReader;
+import utils.Validator;
 
 public class SchoolClass {
 
-	private List<Student> studentList = new ArrayList<Student>();
+	private List<Student> studentList = new ArrayList<>();
 	private String className;
 	private final Pattern studentNamePattern = Pattern.compile("(\\w+[^\\t,]*)(\\s*(,|\\t)+\\s*)+(\\w+[^\\t]*)");
 
@@ -22,11 +23,9 @@ public class SchoolClass {
 	 * Constructor with no arguments. The name of the class is set to "Klasse"
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public SchoolClass() {
-		setClassName("Klasse");
+		this("Klasse");
 	}
 
 	/**
@@ -35,8 +34,6 @@ public class SchoolClass {
 	 * @param className Name of the school class. E.g. Klasse 9b
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public SchoolClass(@NonNull String className) {
 		setClassName(className);
@@ -49,8 +46,6 @@ public class SchoolClass {
 	 * @param studentList list of students, which are in this school class
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public SchoolClass(@NonNull String className, List<Student> studentList) {
 		setClassName(className);
@@ -63,10 +58,8 @@ public class SchoolClass {
 	 * @param student Student to be added
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
-	public void addStudent(Student student) {
+	public void addStudent(@NonNull Student student) {
 		this.studentList.add(student);
 	}
 
@@ -76,8 +69,6 @@ public class SchoolClass {
 	 * @param studentList list of student objects
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public void addStudents(List<Student> studentList) {
 		for (Student student : studentList) {
@@ -91,22 +82,11 @@ public class SchoolClass {
 	 * @return number of students
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public int getSize() {
 		return getStudentList().size();
 	}
 
-	/**
-	 * Get a list containing all stundets of the school class
-	 * 
-	 * @return list of Student objects
-	 * 
-	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
-	 */
 	public List<Student> getStudentList() {
 		return this.studentList;
 	}
@@ -118,10 +98,8 @@ public class SchoolClass {
 	 * @return boolean which indicates if the school class contains any students
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
-	public boolean isEmpty() {
+	public boolean hasNoStudents() {
 		return getStudentList().isEmpty();
 	}
 
@@ -132,16 +110,13 @@ public class SchoolClass {
 	 * @return Error which contains information about the process
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public Error loadStudentsFromFile(File file) {
 		if (file == null) {
-			throw new RuntimeException("Invalid argument null for File.");
+			throw new NullPointerException("Invalid argument null for file.");
 		} else if (!file.exists() || !file.canRead()) {
-			Error err = new Error(Error.ERROR,
+			return new Error(Error.ERROR,
 					String.format("Die Datei \"%s\" kann nicht gelesen werden", file.getAbsolutePath()));
-			return err;
 		} else {
 			return parseStudentsFile(file);
 		}
@@ -156,8 +131,6 @@ public class SchoolClass {
 	 * @return Error, which contains information about the parsing process
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	private Error parseStudentsFile(File file) {
 		Error err = new Error();
@@ -168,11 +141,11 @@ public class SchoolClass {
 		// Get the file name without the file extension
 		String fileName = file.getName();
 		String[] fileParts = fileName.split("\\.");
-		String className = "";
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < fileParts.length - 1; i++) {
-			className += fileParts[i];
+			stringBuilder.append(fileParts[i]);
 		}
-		setClassName(className);
+		setClassName(stringBuilder.toString());
 
 		// Read the file line by line
 		List<String> fileContentList;
@@ -181,7 +154,7 @@ public class SchoolClass {
 		} catch (IOException e) {
 			err.setErrorLevel(Error.ERROR);
 			err.setMessage(
-					String.format("Fehler beim Einlesen der Datei \"%s\".\nDie Datei ist möglicherweise nicht lesbar.",
+					String.format("Fehler beim Einlesen der Datei \"%s\".\nDie Datei ist mÃ¶glicherweise nicht lesbar.",
 							file.getAbsolutePath()));
 			return err;
 		}
@@ -210,41 +183,25 @@ public class SchoolClass {
 
 		// No Error
 		err.setErrorLevel(0);
-		err.setMessage(this.studentList.size() + " Schülernnamen erfolgreich eingelesen");
+		err.setMessage(this.studentList.size() + " SchÃ¼lernnamen erfolgreich eingelesen");
 		return err;
 	}
 
 	@Deprecated
-	public Error readClassList(String pathToFile) {
+	public Error readClassList(@NonNull String pathToFile) {
 		return parseStudentsFile(new File(pathToFile));
 
 	}
 
-	/**
-	 * Method to set the name of the class. If the class name is null, then it will
-	 * be ignored.
-	 * 
-	 * @param className Name of the class to be set
-	 * 
-	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
-	 */
 	public void setClassName(@NonNull String className) {
-		if (className != null) {
+		if (Validator.isValidString(className)) {
 			this.className = className;
+		} else {
+			throw new IllegalArgumentException(String.format("Invalid value for className: \"%s\". The name must not be null or an empty String.", className));
 		}
 	}
 
-	/**
-	 * Method to get the class name
-	 * 
-	 * @return name of the class
-	 * 
-	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
-	 */
+
 	public String getClassName() {
 		return this.className;
 	}
@@ -255,8 +212,6 @@ public class SchoolClass {
 	 * @param studentList list of Student objets
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 18.10.2020
-	 * @version 1.0
 	 */
 	public void setStudentList(List<Student> studentList) {
 		this.studentList = studentList;

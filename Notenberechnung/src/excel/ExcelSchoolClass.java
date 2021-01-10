@@ -24,11 +24,9 @@ public class ExcelSchoolClass {
 	public void printSchoolClass(Sheet sheet, int startRow, int startColumn) {
 		
 		for (Student student : getSchoolClass().getStudentList()) {
-			ExcelStudent excelStudent = new ExcelStudent(student);
+			StudentExcelDecorator excelStudent = new StudentExcelDecorator(student);
 			excelStudent.printStudent(sheet, startRow, startColumn);
 			startRow++;
 		}
-		
 	}
-
 }

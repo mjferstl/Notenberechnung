@@ -31,11 +31,11 @@ public class LogTable extends Table {
 	
 	public void addLogMessage(String logMessage, Color color) {
 		String[] logMessageLines = logMessage.split("\n");
-		
-		for (int i=0; i<logMessageLines.length; i++) {
+
+		for (String logMessageLine : logMessageLines) {
 			TableItem item = new TableItem(this, SWT.NONE);
 			item.setText(0, getLogTime());
-			item.setText(1, logMessageLines[i]); 
+			item.setText(1, logMessageLine);
 			item.setForeground(color);
 		}
 		

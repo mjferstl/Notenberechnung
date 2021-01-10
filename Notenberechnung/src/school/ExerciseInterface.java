@@ -1,20 +1,16 @@
 package school;
 
 public interface ExerciseInterface {
+
+	ExerciseType getType();
+	String getTypeShortName();
 	
-	final int TYPE_NORMAL_EXERCISE = 1;
-	final int TYPE_TEXTPRODUCTION_EXERCISE = 2;
+	String getConfig();
 	
-	public int getType();
-	public String getTypeShortName();
+	String getName();
+	double getWeighting();
 	
-	public String getConfig();
-	
-	public String getName();
-	public double getWeighting();
-	
-	public String getFirstParam();
-	public String getSecondParam();
-	public String getThirdParam();
-	
+	String getFirstParam();
+	String getSecondParam();
+	String getThirdParam();
 }

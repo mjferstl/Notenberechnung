@@ -1,11 +1,12 @@
 package gui;
 
-import school.ExerciseInterface;
+import log.LogType;
+import school.Exercise;
 
 public interface IF_GUI {
 
-	public void addTask(ExerciseInterface exercise);
-	public void updateTask(ExerciseInterface exercise, int tableIndex);
-	public void addLogMessage(String text, int logLevel);
+	public void addTask(Exercise exercise);
+	public void updateTask(Exercise exercise, int tableIndex);
+	public void addLogMessage(String text, LogType logType);
 	
 }

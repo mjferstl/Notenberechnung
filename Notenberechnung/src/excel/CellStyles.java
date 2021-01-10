@@ -24,7 +24,6 @@ public class CellStyles {
 	
 	public static CellStyle getCellStyleNoColor(Sheet sheet) {
 		CellStyle noColor = sheet.getWorkbook().createCellStyle();
-		noColor = sheet.getWorkbook().createCellStyle();
 		noColor.setFillPattern(FillPatternType.NO_FILL);
 		return noColor;
 	}

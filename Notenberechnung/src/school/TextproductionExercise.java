@@ -3,70 +3,33 @@ package school;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TextproductionExercise implements ExerciseInterface {
+public class TextproductionExercise extends Exercise {
 
-	private String name;
-	private double pointsContent, pointsLanguage, weighting;
 	public final static String CONTENT = "Inhalt";
 	public final static String LANGUAGE = "Sprache";
 	public final static String WEIGHTING = NormalExercise.WEIGHTING;
 	public final static String SHORT_KEY = "T";
-	private final static String CONFIG_PATTERN = "Inhalt: (\\d*.*\\d*), Sprache: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
+
+
+	private final static String CONFIG_PATTERN = String.format("%s: (\\d*.*\\d*), %s: (\\d*.*\\d*), %s: (\\d*.*\\d*)", CONTENT, LANGUAGE, WEIGHTING);
 	private final static Pattern PATTERN = Pattern.compile(CONFIG_PATTERN);
 
-	public TextproductionExercise(String name, double pointsContent, double pointsLanguage) {
-		// Call another constructor
-		this(name, pointsContent, pointsLanguage, 1.0);
-	}
-
-	public TextproductionExercise(String name, double pointsContent, double pointsLanguage, double weighting) {
-		setName(name);
-		setPointsContent(pointsContent);
-		setPointsLanguage(pointsLanguage);
-		setWeighting(weighting);
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public double getPointsContent() {
-		return this.pointsContent;
-	}
-
-	public void setPointsContent(double pointsContent) {
-		this.pointsContent = pointsContent;
-	}
-
-	public double getPointsLanguage() {
-		return this.pointsLanguage;
-	}
-
-	public void setPointsLanguage(double pointsLanguage) {
-		this.pointsLanguage = pointsLanguage;
+	public TextproductionExercise(String name, TextProductionEvaluation evaluation) {
+		super(name);
+		setExerciseType(ExerciseType.TEXT_PRODUCTION);
+		setEvaluation(evaluation);
 	}
 
 	@Override
-	public double getWeighting() {
-		return this.weighting;
+	public String getConfigString() {
+		return "Inhalt: " + this.getEvaluation().getPointsContent() + ", Sprache: " + this.getEvaluation().getPointsLanguage() + ", Gewichtung: " + this.getEvaluation().getWeighting();
 	}
 
-	public void setWeighting(double weighting) {
-		this.weighting = weighting;
+	@Override
+	public String getKey() {
+		return SHORT_KEY;
 	}
-	
-	public String getConfig() {
-		return "Inhalt: " + this.pointsContent + ", Sprache: " + this.pointsLanguage + ", Gewichtung: " + this.weighting;
-	}
-	
-	public int getType() {
-		return TYPE_TEXTPRODUCTION_EXERCISE;
-	}
-	
+
 	public String getNameContent() {
 		return CONTENT;
 	}
@@ -80,52 +43,31 @@ public class TextproductionExercise implements ExerciseInterface {
 	}
 
 	public static TextproductionExercise parseTextToTextproduktion(String name, String text) {
-
-		TextproductionExercise tp = new TextproductionExercise(name, 0, 0);
 		
 		Matcher m = PATTERN.matcher(text);
 		
-		if (m.matches()) {
-			if (m.groupCount() == 3) {
-				try {
-					double content = Double.parseDouble(m.group(1));
-					double language = Double.parseDouble(m.group(2));
-					double weighting = Double.parseDouble(m.group(3));
-					
-					tp.setPointsContent(content);
-					tp.setPointsLanguage(language);
-					tp.setWeighting(weighting);
-					return tp;
-				} catch (NumberFormatException e) {
-					//Notenberechnung_GUI.updateLog("Bitte nur Zahlen eingeben","red");
-					return null;
-				}								
-			} else {
-				//Notenberechnung_GUI.updateLogwindow("Fehler beim Erstellen der Aufagben im *.xlsx", "red");
-				return null;
-			}							
+		if (m.matches() && m.groupCount() == 3) {
+			try {
+				double content = Double.parseDouble(m.group(1));
+				double language = Double.parseDouble(m.group(2));
+				double weighting = Double.parseDouble(m.group(3));
+
+				TextProductionEvaluation evaluation = new TextProductionEvaluation(weighting, content, language);
+				evaluation.setWeighting(weighting);
+				evaluation.setPointsContent(content);
+				evaluation.setPointsLanguage(language);
+
+				return new TextproductionExercise(name, evaluation);
+			} catch (NumberFormatException e) {
+				throw new NumberFormatException(String.format("Cannot convert the Strings %s, %s and %s to double", m.group(1), m.group(2), m.group(3)));
+			}
 		} else {
-			return null;
+			throw new RuntimeException(String.format("The String \"%s\" does not represent a TextproductionExercise in the format: %s", text, PATTERN.pattern()));
 		}	
-	}
-	
-	public String getFirstParam() {
-		String s = String.valueOf(getPointsContent());
-		return s;
-	}
-
-	public String getSecondParam() {
-		String s = String.valueOf(getPointsLanguage());
-		return s;
-	}
-
-	public String getThirdParam() {
-		String s = String.valueOf(getWeighting());
-		return s;
 	}
 
 	@Override
-	public String getTypeShortName() {
-		return SHORT_KEY;
+	public TextProductionEvaluation getEvaluation() {
+		return (TextProductionEvaluation) super.getEvaluation();
 	}
 }

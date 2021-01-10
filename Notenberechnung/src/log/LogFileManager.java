@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -13,7 +14,6 @@ import java.util.Date;
  * the program e.g. before it crashed
  * 
  * @author Mathias
- * @date 13.10.2020
  * @version 1.0
  */
 public class LogFileManager {
@@ -21,7 +21,7 @@ public class LogFileManager {
 	private final SimpleDateFormat logSdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SSS");
 	private final String logFileName = "Notenberechnung.log";
 
-	private File logFile = new File(logFileName);
+	private final File logFile = new File(logFileName);
 
 	public LogFileManager() {
 
@@ -34,11 +34,9 @@ public class LogFileManager {
 	 * @return String containing the absolute path to the log file
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
 	 */
 	public String getLogFilePath() {
-		if ((logFile != null) && (this.logFile.exists())) {
+		if (this.logFile.exists()) {
 			return this.logFile.getAbsolutePath();
 		} else {
 			return null;
@@ -51,8 +49,6 @@ public class LogFileManager {
 	 * @param logMessage message to be written to the log file
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
 	 */
 	public void writeLogMessage(String logMessage) {
 		addMessageToLog(logMessage);
@@ -65,14 +61,12 @@ public class LogFileManager {
 	 * @param logMessage message to be written to the log file
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
 	 */
 	private void addMessageToLog(String logMessage) {
 		File logFile = new File(logFileName);
 		try {
 			FileOutputStream fileStream = new FileOutputStream(logFile, true);
-			OutputStreamWriter logFileWriter = new OutputStreamWriter(fileStream, "UTF-8");
+			OutputStreamWriter logFileWriter = new OutputStreamWriter(fileStream, StandardCharsets.UTF_8);
 
 			logFileWriter.write(createLogMessage(logMessage));
 
@@ -93,8 +87,6 @@ public class LogFileManager {
 	 * @return String containing the message in the log file format
 	 * 
 	 * @author Mathias Ferstl
-	 * @date 13.10.2020
-	 * @version 1.0
 	 */
 	private String createLogMessage(String logMessage) {
 		return logSdf.format(new Date()) + " - " + logMessage + "\r\n";

@@ -1,26 +1,17 @@
 package utils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import org.eclipse.jdt.annotation.NonNull;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TextFileReader {
+public class TextFileReader implements FileReader{
 
 	private File file;
 
-	public TextFileReader() {
-
-	}
-
-	public TextFileReader(String pathToFile) {
-		this(new File(pathToFile));
-	}
-
-	public TextFileReader(File file) {
+	public TextFileReader(@NonNull File file) {
 		setFile(file);
 	}
 
@@ -28,12 +19,8 @@ public class TextFileReader {
 		return this.file;
 	}
 
-	public void setFile(File file) {
+	public void setFile(@NonNull File file) {
 		this.file = file;
-	}
-
-	public void setFile(String filePath) {
-		this.setFile(new File(filePath));
 	}
 
 	public List<String> readFile() throws IOException {
@@ -41,8 +28,8 @@ public class TextFileReader {
 		List<String> contentLineByLine = new ArrayList<>();
 		
 		try (FileInputStream fis = new FileInputStream(getFile());
-				InputStreamReader isr = new InputStreamReader(fis);
-				BufferedReader reader = new BufferedReader(isr)) {
+			 InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.ISO_8859_1);
+			 BufferedReader reader = new BufferedReader(isr)) {
 
 			String lineContent;
 			while ((lineContent = reader.readLine()) != null) {
@@ -50,10 +37,9 @@ public class TextFileReader {
 			}
 
 		} catch (IOException e) {
-			throw e;
+			throw new IOException("The file " + file.getAbsolutePath() + " cannot be read. " + e.getMessage());
 		}
 		
 		return contentLineByLine;
 	}
-
 }

@@ -1,38 +1,25 @@
 package school;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 public class Student {
 
-	private String firstName, surname;
+	private final String firstName;
+	private final String surname;
 	
-	public Student(String firstName, String surname) {
+	public Student(@NonNull String firstName, @NonNull String surname) {
 		this.firstName = firstName;
 		this.surname = surname;
 	}
 
 	public String getFirstName() {
-		if (this.firstName == null) {
-			return "";
-		} else {
-			return this.firstName;
-		}
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+		return this.firstName;
 	}
 
 	public String getSurname() {
-		if (this.surname == null) {
-			return "";
-		} else {
-			return this.surname;
-		}
+		return this.surname;
 	}
 
-	public void setSurname(String surname) {
-		this.surname = surname;
-	}
-	
 	public String getName() {
 		return getSurname() + ' ' + getFirstName();
 	}
@@ -49,7 +36,7 @@ public class Student {
 			return (student.getFirstName().equals(getFirstName())) && (student.getSurname().equals(getSurname()));
 			
 		} else {
-			throw new RuntimeException("Cannot compare " + obj + " with object of type <Student>.");
+			throw new IllegalArgumentException("Cannot compare " + obj + " with an object of type <Student>.");
 		}
 	}
 	
