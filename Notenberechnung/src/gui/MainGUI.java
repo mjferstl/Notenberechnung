@@ -79,8 +79,12 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
         shell = new Shell();
 
         // Set the icon and text in the title bar
-        Image icon = new Image(shell.getDisplay(), "src/gui/icon.png");
-        shell.setImage(icon);
+        try {
+        	Image icon = new Image(shell.getDisplay(), "src/gui/icon.png");
+        	shell.setImage(icon);
+        } catch (Exception e) {
+			this.log.addMessage("Cannot load the icon for the toolbar. Error: " + e.getMessage());
+		}
         shell.setText("Erstellen einer Excel-Datei zur Notenauswertung");
 
         // set the size and layout
@@ -353,7 +357,6 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
         String text = tableItem.getText(2);
 
         Exercise e;
-        System.out.println(tableItem.getText(0));
         switch (tableItem.getText(0)) {
             case NormalExercise.SHORT_KEY: e = NormalExercise.parseTextToAufgabe(bezeichnung, text); break;
             case TextproductionExercise.SHORT_KEY: e = TextproductionExercise.parseTextToTextproduktion(bezeichnung, text); break;
