@@ -3,11 +3,11 @@ package school.exercise;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class TextproductionExercise extends Exercise {
 
 	public final static String CONTENT = "Inhalt";
 	public final static String LANGUAGE = "Sprache";
-	public final static String WEIGHTING = NormalExercise.WEIGHTING;
 	public final static String SHORT_KEY = "T";
 
 
@@ -16,7 +16,6 @@ public class TextproductionExercise extends Exercise {
 
 	public TextproductionExercise(String name, TextProductionEvaluation evaluation) {
 		super(name);
-		setExerciseType(ExerciseType.TEXT_PRODUCTION);
 		setEvaluation(evaluation);
 	}
 
@@ -62,12 +61,18 @@ public class TextproductionExercise extends Exercise {
 				throw new NumberFormatException(String.format("Cannot convert the Strings %s, %s and %s to double", m.group(1), m.group(2), m.group(3)));
 			}
 		} else {
-			throw new RuntimeException(String.format("The String \"%s\" does not represent a TextproductionExercise in the format: %s", text, PATTERN.pattern()));
+			String msg = String.format("The String \"%s\" does not represent a TextproductionExercise in the format: %s", text, PATTERN.pattern());
+			throw new IllegalArgumentException(msg);
 		}	
 	}
 
 	@Override
 	public TextProductionEvaluation getEvaluation() {
 		return (TextProductionEvaluation) super.getEvaluation();
+	}
+
+	@Override
+	public ExerciseType getExerciseType() {
+		return ExerciseType.TEXT_PRODUCTION;
 	}
 }

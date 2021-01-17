@@ -19,6 +19,6 @@ public abstract class Evaluation {
 
     @Override
     public String toString() {
-        return String.format("<%s> {weighting=%s}", this.getClass().toString(), getWeighting());
+        return String.format("<%s> {weighting:%s}", this.getClass().toString(), getWeighting());
     }
 }

@@ -6,7 +6,8 @@ public abstract class Exercise {
 
     private String name;
     private Evaluation evaluation;
-    private ExerciseType exerciseType = ExerciseType.UNDEFINED;
+    
+    public final static String WEIGHTING = "Gewichtung";
 
     public Exercise(String name) {
         setName(name);
@@ -25,13 +26,7 @@ public abstract class Exercise {
         return this.name;
     }
 
-    public void setExerciseType(@NonNull ExerciseType exerciseType) {
-        this.exerciseType = exerciseType;
-    }
-
-    public ExerciseType getExerciseType() {
-        return this.exerciseType;
-    }
+    public abstract ExerciseType getExerciseType();
 
     public void setEvaluation(@NonNull Evaluation evaluation) {
         this.evaluation = evaluation;

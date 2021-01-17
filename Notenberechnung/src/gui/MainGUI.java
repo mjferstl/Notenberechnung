@@ -192,7 +192,7 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelection() != null)
-                        && (tabExercises.getSelectionIndex() != 0)) {
+                        && (tabExercises.getSelectionIndex() >  0)) {
                     int selectedItem = tabExercises.getSelectionIndex();
                     moveExercise(selectedItem, "upwards");
                 }
@@ -226,7 +226,7 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if ((tabExercises.getItemCount() != 0) && (tabExercises.getSelection() != null)
-                        && (tabExercises.getSelectionIndex() != tabExercises.getItemCount())) {
+                        && (tabExercises.getSelectionIndex()+1 < tabExercises.getItemCount())) {
                     int selectedItem = tabExercises.getSelectionIndex();
                     moveExercise(selectedItem, "downwards");
                 }
@@ -352,11 +352,14 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
         String bezeichnung = tableItem.getText(1);
         String text = tableItem.getText(2);
 
-        return switch (tableItem.getText(0)) {
-            case NormalExercise.SHORT_KEY -> NormalExercise.parseTextToAufgabe(bezeichnung, text);
-            case TextproductionExercise.SHORT_KEY -> TextproductionExercise.parseTextToTextproduktion(bezeichnung, text);
-            default -> throw new IllegalStateException("Unexpected value: " + tableItem.getText(0));
-        };
+        Exercise e;
+        System.out.println(tableItem.getText(0));
+        switch (tableItem.getText(0)) {
+            case NormalExercise.SHORT_KEY: e = NormalExercise.parseTextToAufgabe(bezeichnung, text); break;
+            case TextproductionExercise.SHORT_KEY: e = TextproductionExercise.parseTextToTextproduktion(bezeichnung, text); break;
+            default: throw new IllegalStateException("Unexpected value: " + tableItem.getText(0));
+        }
+        return e;
     }
 
     /**
@@ -442,15 +445,16 @@ public class MainGUI implements UpdatePublisher, IF_GUI {
      * @author Mathias Ferstl
      */
     private void moveExercise(int index, String direction) {
-        if (index >= 0 && (direction.equals("upwards") || direction.equals("downwards"))) {
+        if ((index >= 0) && (index < tabExercises.getItemCount()) &&(direction.equals("upwards") || direction.equals("downwards"))) {
             TableItem tableItem = tabExercises.getItem(index);
             String[] tableItemContent = {tableItem.getText(0), tableItem.getText(1), tableItem.getText(2)};
+            
             tableItem.dispose();
-
+            
             TableItem newTableItem;
             if (direction.equals("upwards") && index > 0) {
                 newTableItem = new TableItem(tabExercises, SWT.NONE, index - 1);
-            } else if (direction.equals("downwards")) {
+            } else if (direction.equals("downwards") && index < tabExercises.getItemCount()+1) {
                 newTableItem = new TableItem(tabExercises, SWT.NONE, index + 1);
             } else {
                 return;

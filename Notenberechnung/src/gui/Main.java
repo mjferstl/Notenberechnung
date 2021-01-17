@@ -6,7 +6,7 @@ import log.Log;
 
 public class Main {
 
-	public final static String VERSION = "0.3.5";
+	public final static String VERSION = "0.4.0";
 
 	/**
 	 * Launch the application.
@@ -24,7 +24,7 @@ public class Main {
 			gui.open();
 			log.addMessage("GUI closed");
 		} catch (Exception e) {
-			System.out.println(e.toString());
+			e.printStackTrace();
 			log.addMessage("Error stopped program");
 			
 			StringWriter error = new StringWriter();

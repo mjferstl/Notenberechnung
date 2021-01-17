@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 public class NormalExercise extends Exercise {
 
 	public final static String BE = "BE";
-	public final static String WEIGHTING = "Gewichtung";
 	public final static String SHORT_KEY = "A";
 	private final static String CONFIG_PATTERN = "BE: (\\d*.*\\d*), Gewichtung: (\\d*.*\\d*)";
 	private final static Pattern PATTERN = Pattern.compile(CONFIG_PATTERN);

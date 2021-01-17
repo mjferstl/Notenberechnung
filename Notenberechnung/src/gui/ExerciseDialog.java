@@ -320,18 +320,23 @@ public class ExerciseDialog extends Dialog {
 		// set entries in the text fields
 		String first = "", second = "", third = "";
 		switch (importedTask.getExerciseType()) {
-			case NORMAL_TASK -> {
+			case NORMAL_TASK: {
 				NormalExercise exercise = (NormalExercise) importedTask;
 				NormalExerciseEvaluation evaluation = exercise.getEvaluation();
 				first = String.valueOf(evaluation.getBE());
 				second = String.valueOf(evaluation.getWeighting());
+				break;
 			}
-			case TEXT_PRODUCTION -> {
+			case TEXT_PRODUCTION: {
 				TextproductionExercise exercise = (TextproductionExercise) importedTask;
 				TextProductionEvaluation evaluation = exercise.getEvaluation();
 				first = String.valueOf(evaluation.getPointsContent());
 				second = String.valueOf(evaluation.getPointsLanguage());
 				third = String.valueOf(evaluation.getWeighting());
+				break;
+			}
+			case UNDEFINED: {
+				throw new IllegalStateException("The imported task " + importedTask.getName() + " has an invald exercise type: " + importedTask.getExerciseType());
 			}
 		}
 		editText1.setText(first);

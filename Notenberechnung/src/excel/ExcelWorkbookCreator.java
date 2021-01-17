@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
 public class ExcelWorkbookCreator {
 
 	private final int startRow = 4; // funefte Zeile
@@ -183,17 +181,19 @@ public class ExcelWorkbookCreator {
 		for (Exercise exercise : exerciseList) {
 			if (exercise != null) {
 				switch (exercise.getExerciseType()) {
-					case NORMAL_TASK -> {
+					case NORMAL_TASK: {
 						returnValue = ExcelExercisePrinter.printNormalExercise(sheet, (NormalExercise) exercise, startRow,
 								column, numRows);
 						column += ExcelExercisePrinter.COLUMN_RANGE_NORMAL_EXERCISE;
+						break;
 					}
-					case TEXT_PRODUCTION -> {
+					case TEXT_PRODUCTION: {
 						returnValue = ExcelExercisePrinter.printTextproductionExercise(sheet,
 								(TextproductionExercise) exercise, startRow, column, numRows);
 						column += ExcelExercisePrinter.COLUMN_RANGE_TEXTPRODUCTION_EXERCISE;
+						break;
 					}
-					default -> returnValue = null;
+					default: returnValue = null;
 				}
 
 				if (returnValue != null) {
@@ -314,10 +314,10 @@ public class ExcelWorkbookCreator {
 		SheetConditionalFormatting sheetCF = sheet.getSheetConditionalFormatting();
 		ConditionalFormattingRule rule1 = sheetCF.createConditionalFormattingColorScaleRule();
 		ColorScaleFormatting clrFmt = rule1.getColorScaleFormatting();
-		assertEquals(3, clrFmt.getNumControlPoints());
+		//assertEquals(3, clrFmt.getNumControlPoints());
 		String[] colors = { "00b034", "ffc000", "ff0000" };
-		assertEquals(3, clrFmt.getColors().length);
-		assertEquals(3, clrFmt.getThresholds().length);
+		//assertEquals(3, clrFmt.getColors().length);
+		//assertEquals(3, clrFmt.getThresholds().length);
 
 		for (int c = 0; c < 3; c++) {
 			((ExtendedColor) clrFmt.getColors()[c]).setARGBHex(colors[c]);
@@ -399,7 +399,7 @@ public class ExcelWorkbookCreator {
 		this.rowIndexFirstGrade = rowIdx;
 		for (int i = 1; i <= 6; i++) {
 			int rowNumber = rowIdx + i - 1;
-			ExcelSheetFunctions.setCellText(sheet, rowNumber, gradesColumn, i);
+		 	ExcelSheetFunctions.setCellText(sheet, rowNumber, gradesColumn, i);
 			ExcelSheetFunctions.setCellTextAsFormula(sheet, rowNumber, percentColumn, percentageFormulas[i - 1]);
 			if (i == 1) {
 				formula = cellNameTotalPoints;

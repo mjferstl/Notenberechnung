@@ -62,10 +62,14 @@ public class Log implements IF_Log {
 	
 	private Color getLogColor(LogType logType) {
 
-		return switch (logType) {
-			case ERROR -> IF_Log.RED;
-			case INFO, WARNING -> IF_Log.BLACK;
-		};
+		Color c;
+		switch (logType) {
+			case ERROR: c = IF_Log.RED; break;
+			case INFO: c = IF_Log.BLACK; break;
+			case WARNING: c = IF_Log.BLACK; break;
+			default: throw new IllegalStateException("Illegal state: " + logType);
+		}
+		return c;
 	} 
 
 }
